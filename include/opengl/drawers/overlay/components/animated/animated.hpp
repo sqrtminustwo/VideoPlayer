@@ -7,7 +7,7 @@
 namespace Overlay {
 
 struct Animated : public Component {
-    float opacity;
+    float opacity = 0.f;
     player_ptr player;
 
     Animated(player_ptr);

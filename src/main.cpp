@@ -1,7 +1,6 @@
 #include "ffmpeg/video_player.hpp"
 #include "fonts/fonts.hpp"
 #include "opengl/drawers/overlay/components/controller.hpp"
-#include "opengl/drawers/overlay/components/animated/pause.hpp"
 #include "opengl/drawers/overlay/drawer.hpp"
 #include "stb_image.h"
 #include "opengl/drawers/frame/drawer_yuv420.hpp"
@@ -45,20 +44,20 @@ int main(int argc, char **argv) {
 
     init_imgui_fonts(opengl_context->main_scale);
 
-    components_vector components = {
-        std::make_shared<Overlay::Controller>(player),
-        std::make_shared<Overlay::Pause>(player)
-    };
+    components_vector components = {std::make_shared<Overlay::Controller>(player)};
+    std::mutex components_mutex;
 
     bool show_demo_window = true;
     bool p_open = true;
 
     DrawerYUV420 frame_drawer{opengl_context};
-    Overlay::Drawer overlay_drawer;
+    Overlay::Drawer overlay_drawer{components_mutex};
 
     frame_ptr frame;
 
-    glfwSetKeyCallback(opengl_context->window, make_key_callback(opengl_context, player));
+    KeyHandler keyhandler{player, components, components_mutex};
+
+    glfwSetKeyCallback(opengl_context->window, keyhandler.make_key_callback(opengl_context));
 
 #ifdef __EMSCRIPTEN__
     EMSCRIPTEN_MAINLOOP_BEGIN

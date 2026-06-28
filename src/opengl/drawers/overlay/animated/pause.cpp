@@ -24,9 +24,9 @@ void Overlay::Pause::operator()() {
     auto dim = maxWidth / 10;
     ImGui::PushFont(NULL, dim);
 
-    ImGui::Begin("Pause", &open, window_flags);
+    ImGui::Begin("Pause", &open, window_flags | ImGuiWindowFlags_NoResize);
 
-    ImGui::Text("%s", Overlay::Pause::get_icon(player));
+    ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, opacity), "%s", Overlay::Pause::get_icon(player));
 
     ImGui::End();
 

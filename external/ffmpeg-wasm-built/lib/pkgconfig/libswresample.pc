@@ -1,0 +1,14 @@
+prefix=/home/main-ubuntu/CodingApps/ffmpeg/../ffmpeg-wasm-built
+exec_prefix=${prefix}
+libdir=/home/main-ubuntu/CodingApps/ffmpeg/../ffmpeg-wasm-built/lib
+includedir=/home/main-ubuntu/CodingApps/ffmpeg/../ffmpeg-wasm-built/include
+
+Name: libswresample
+Description: FFmpeg audio resampling library
+Version: 6.4.100
+Requires: libavutil >= 60.33.101
+Requires.private: 
+Conflicts:
+Libs: -L${libdir}  -lswresample -lm
+Libs.private: 
+Cflags: -I${includedir}

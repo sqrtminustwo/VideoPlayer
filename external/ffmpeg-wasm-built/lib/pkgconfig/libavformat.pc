@@ -1,0 +1,14 @@
+prefix=/home/main-ubuntu/CodingApps/ffmpeg/../ffmpeg-wasm-built
+exec_prefix=${prefix}
+libdir=/home/main-ubuntu/CodingApps/ffmpeg/../ffmpeg-wasm-built/lib
+includedir=/home/main-ubuntu/CodingApps/ffmpeg/../ffmpeg-wasm-built/include
+
+Name: libavformat
+Description: FFmpeg container format library
+Version: 62.19.101
+Requires: libavcodec >= 62.36.101, libswresample >= 6.4.100, libavutil >= 60.33.101
+Requires.private: 
+Conflicts:
+Libs: -L${libdir}  -lavformat -lm
+Libs.private: 
+Cflags: -I${includedir}

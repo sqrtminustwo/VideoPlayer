@@ -1,0 +1,14 @@
+prefix=/home/main-ubuntu/CodingApps/ffmpeg/../ffmpeg-wasm-built
+exec_prefix=${prefix}
+libdir=/home/main-ubuntu/CodingApps/ffmpeg/../ffmpeg-wasm-built/lib
+includedir=/home/main-ubuntu/CodingApps/ffmpeg/../ffmpeg-wasm-built/include
+
+Name: libavdevice
+Description: FFmpeg device handling library
+Version: 62.4.100
+Requires: libavfilter >= 11.17.100, libswscale >= 9.8.100, libavformat >= 62.19.101, libavcodec >= 62.36.101, libswresample >= 6.4.100, libavutil >= 60.33.101
+Requires.private: 
+Conflicts:
+Libs: -L${libdir}  -lavdevice -lm
+Libs.private: 
+Cflags: -I${includedir}

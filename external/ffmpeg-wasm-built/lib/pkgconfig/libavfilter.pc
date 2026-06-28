@@ -1,0 +1,14 @@
+prefix=/home/main-ubuntu/CodingApps/ffmpeg/../ffmpeg-wasm-built
+exec_prefix=${prefix}
+libdir=/home/main-ubuntu/CodingApps/ffmpeg/../ffmpeg-wasm-built/lib
+includedir=/home/main-ubuntu/CodingApps/ffmpeg/../ffmpeg-wasm-built/include
+
+Name: libavfilter
+Description: FFmpeg audio/video filtering library
+Version: 11.17.100
+Requires: libswscale >= 9.8.100, libavformat >= 62.19.101, libavcodec >= 62.36.101, libswresample >= 6.4.100, libavutil >= 60.33.101
+Requires.private: 
+Conflicts:
+Libs: -L${libdir}  -lavfilter -pthread -lm
+Libs.private: 
+Cflags: -I${includedir}

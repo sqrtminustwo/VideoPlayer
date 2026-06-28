@@ -1,0 +1,7 @@
+build/*
+build-wasm/*
+# external/*
+output
+assets/*
+!assets/fonts
+!assets/fonts/*

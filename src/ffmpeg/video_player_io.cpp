@@ -319,4 +319,6 @@ void VideoPlayer::set_played_duration(const duration &duration) {
 
     // skip to real seeked time
     while (front_frame_timestamp_in_seconds() < duration_in_seconds) skip();
+
+    played_duration = duration;
 }

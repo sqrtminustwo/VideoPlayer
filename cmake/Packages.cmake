@@ -57,13 +57,9 @@ if(EMSCRIPTEN)
     target_link_options(${PROJECT_NAME} PRIVATE
         "-pthread"
         "-sPTHREAD_POOL_SIZE=4"
-        "-sPROXY_TO_PTHREAD=1"      # <-- This is the key for modern builds
-        "-sUSE_PTHREADS=1"          # <-- Explicitly enable pthreads
         "-sUSE_GLFW=3"
         "-sUSE_WEBGL2=1"
-        "-sALLOW_MEMORY_GROWTH=1"
         "-sINITIAL_MEMORY=512MB"
-        "-sMAXIMUM_MEMORY=2GB"
         "SHELL:--js-library ${CMAKE_CURRENT_SOURCE_DIR}/../web/capi.js"
         "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/shaders@shaders"
         "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts@assets/fonts"

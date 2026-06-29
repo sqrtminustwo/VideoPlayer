@@ -7,10 +7,20 @@
 namespace Overlay {
 
 struct Animated : public Component {
-    float opacity = 0.f;
+    float opacity = 1.f;
     player_ptr player;
 
-    Animated(player_ptr);
+    void operator()() override;
+
+    Animated(player_ptr, std::string);
+
+  protected:
+    virtual void set_window_pos() = 0;
+
+    virtual const char *get_icon() = 0;
+
+  private:
+    std::string name;
 };
 
 } // namespace Overlay

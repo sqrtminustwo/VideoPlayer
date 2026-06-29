@@ -60,7 +60,7 @@ void Overlay::Controller::operator()() {
     maxWidth = maxWidth - pauseButtonWidth - duration_width - ImGui::GetStyle().FramePadding.x * 2 -
                ImGui::GetStyle().ItemSpacing.x * 2;
 
-    if (ImGui::Button(Overlay::Pause::get_icon(player), ImVec2(pauseButtonWidth, maxHeight)))
+    if (ImGui::Button(Overlay::Pause::get_icon_local(player), ImVec2(pauseButtonWidth, maxHeight)))
         player->pause.toggle();
 
     ImGui::SameLine();

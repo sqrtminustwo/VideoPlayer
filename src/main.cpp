@@ -44,6 +44,7 @@ int main(int argc, char **argv) {
 
     init_imgui_fonts(opengl_context->main_scale);
 
+    // Will be expanded by animated icons dynamically, thats why vector
     components_vector components = {std::make_shared<Overlay::Controller>(player)};
     std::mutex components_mutex;
 

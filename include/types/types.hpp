@@ -15,7 +15,8 @@ class AVIOContext;
 class AVCodec;
 namespace Overlay {
 class Component;
-}
+class Animated;
+} // namespace Overlay
 namespace Context {
 class OpenGL;
 }
@@ -32,6 +33,7 @@ using packet_ptr = std::unique_ptr<AVPacket, void (*)(AVPacket *)>;
 using avio_ptr = std::unique_ptr<AVIOContext, void (*)(AVIOContext *)>;
 
 using components_vector = std::vector<std::shared_ptr<Overlay::Component>>;
+using animated_ptr = std::shared_ptr<Overlay::Animated>;
 
 using time_point = std::chrono::system_clock::time_point;
 using duration = std::chrono::duration<float>;

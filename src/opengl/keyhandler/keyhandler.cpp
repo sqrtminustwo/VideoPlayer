@@ -1,4 +1,6 @@
 #include "opengl/drawers/overlay/components/animated/pause.hpp"
+#include "opengl/drawers/overlay/components/animated/backward.hpp"
+#include "opengl/drawers/overlay/components/animated/forward.hpp"
 #include <opengl/keyhandler/keyhandler.hpp>
 #include <thread>
 #include "opengl/context/context.hpp" // IWYU pragma: keep
@@ -18,37 +20,64 @@ GLFWkeyfun KeyHandler::make_key_callback(opengl_context opengl_context) {
         auto r_or_p = action == GLFW_REPEAT || p;
         if (key == GLFW_KEY_SPACE && p) {
             if (keyhandler->can_add_new_pause) {
-                std::thread t(&KeyHandler::animate_pause, keyhandler);
+                std::thread t(
+                    &KeyHandler::animate,
+                    keyhandler,
+                    std::make_shared<Overlay::Pause>(player),
+                    &keyhandler->can_add_new_pause
+                );
                 t.detach();
             }
             player->pause.toggle();
         }
-        if (key == GLFW_KEY_LEFT && r_or_p) player->skip_seconds_forward(false);
-        if (key == GLFW_KEY_RIGHT && r_or_p) player->skip_seconds_forward(true);
+        if (key == GLFW_KEY_LEFT && r_or_p) {
+            if (keyhandler->can_add_new_backward) {
+                std::thread t(
+                    &KeyHandler::animate,
+                    keyhandler,
+                    std::make_shared<Overlay::Backward>(player),
+                    &keyhandler->can_add_new_backward
+                );
+                t.detach();
+            }
+            player->skip_seconds_forward(false);
+        }
+        if (key == GLFW_KEY_RIGHT && r_or_p) {
+            if (keyhandler->can_add_new_forward) {
+                std::thread t(
+                    &KeyHandler::animate,
+                    keyhandler,
+                    std::make_shared<Overlay::Forward>(player),
+                    &keyhandler->can_add_new_forward
+                );
+                t.detach();
+            }
+            player->skip_seconds_forward(true);
+        }
     };
 }
 
-void KeyHandler::animate_pause() {
-    can_add_new_pause = false;
-    auto pause = std::make_shared<Overlay::Pause>(player);
+void KeyHandler::animate(animated_ptr component, bool *can_add_new) {
+    *can_add_new = false;
 
     componets_mutex.lock();
-    components.push_back(pause);
+    components.push_back(component);
     componets_mutex.unlock();
 
-    while (pause->opacity < 1.0) {
-        pause->opacity += 0.02;
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    while (component->opacity < 1.0) {
+        component->opacity += 0.02;
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
-    while (pause->opacity > 0.) {
-        pause->opacity -= 0.02;
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    while (component->opacity > 0.) {
+        component->opacity -= 0.02;
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     componets_mutex.lock();
-    auto pos = std::find(components.begin(), components.end(), pause);
+    auto pos = std::find(components.begin(), components.end(), component);
     if (pos != components.end()) components.erase(pos);
     componets_mutex.unlock();
-    can_add_new_pause = true;
+
+    *can_add_new = true;
 }

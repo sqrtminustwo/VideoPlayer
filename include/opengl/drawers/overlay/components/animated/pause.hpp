@@ -7,11 +7,16 @@
 namespace Overlay {
 
 struct Pause : public Animated {
+
     Pause(player_ptr);
 
-    void operator()() override;
+    static const char *get_icon_local(player_ptr player);
 
-    static const char *get_icon(player_ptr player);
+  private:
+    const char *get_icon() override;
+
+  private:
+    virtual void set_window_pos() override;
 };
 
 } // namespace Overlay

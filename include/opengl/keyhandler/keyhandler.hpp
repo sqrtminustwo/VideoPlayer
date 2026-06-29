@@ -9,12 +9,14 @@ struct KeyHandler {
     components_vector &components;
     std::mutex &componets_mutex;
     bool can_add_new_pause = true;
+    bool can_add_new_forward = true;
+    bool can_add_new_backward = true;
 
     KeyHandler(player_ptr, components_vector &, std::mutex &components_mutex);
 
     GLFWkeyfun make_key_callback(opengl_context);
 
-    void animate_pause();
+    void animate(animated_ptr component, bool *can_add_new);
 };
 
 #endif

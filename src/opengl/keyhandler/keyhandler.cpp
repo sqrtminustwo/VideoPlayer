@@ -19,46 +19,38 @@ GLFWkeyfun KeyHandler::make_key_callback(opengl_context opengl_context) {
         auto p = action == GLFW_PRESS;
         auto r_or_p = action == GLFW_REPEAT || p;
         if (key == GLFW_KEY_SPACE && p) {
-            if (keyhandler->can_add_new_pause) {
-                std::thread t(
-                    &KeyHandler::animate,
-                    keyhandler,
-                    std::make_shared<Overlay::Pause>(player),
-                    &keyhandler->can_add_new_pause
-                );
-                t.detach();
-            }
+            keyhandler->make_aimation_thread(
+                std::make_shared<Overlay::Pause>(player),
+                keyhandler->pause
+            );
             player->pause.toggle();
         }
         if (key == GLFW_KEY_LEFT && r_or_p) {
-            if (keyhandler->can_add_new_backward) {
-                std::thread t(
-                    &KeyHandler::animate,
-                    keyhandler,
-                    std::make_shared<Overlay::Backward>(player),
-                    &keyhandler->can_add_new_backward
-                );
-                t.detach();
-            }
+            keyhandler->make_aimation_thread(
+                std::make_shared<Overlay::Backward>(player),
+                keyhandler->backward
+            );
             player->skip_seconds_forward(false);
         }
         if (key == GLFW_KEY_RIGHT && r_or_p) {
-            if (keyhandler->can_add_new_forward) {
-                std::thread t(
-                    &KeyHandler::animate,
-                    keyhandler,
-                    std::make_shared<Overlay::Forward>(player),
-                    &keyhandler->can_add_new_forward
-                );
-                t.detach();
-            }
+            keyhandler->make_aimation_thread(
+                std::make_shared<Overlay::Forward>(player),
+                keyhandler->forward
+            );
             player->skip_seconds_forward(true);
         }
     };
 }
 
-void KeyHandler::animate(animated_ptr component, bool *can_add_new) {
-    *can_add_new = false;
+void KeyHandler::make_aimation_thread(animated_ptr component, State &state) {
+    if (state.can_add_new) {
+        std::thread t(&KeyHandler::animate, this, component, &state);
+        t.detach();
+    } else state.reset_opacity = true;
+}
+
+void KeyHandler::animate(animated_ptr component, State *state) {
+    state->can_add_new = false;
 
     componets_mutex.lock();
     components.push_back(component);
@@ -70,6 +62,10 @@ void KeyHandler::animate(animated_ptr component, bool *can_add_new) {
     }
 
     while (component->opacity > 0.) {
+        if (state->reset_opacity) {
+            component->opacity = 1;
+            state->reset_opacity = false;
+        }
         component->opacity -= 0.02;
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -79,5 +75,5 @@ void KeyHandler::animate(animated_ptr component, bool *can_add_new) {
     if (pos != components.end()) components.erase(pos);
     componets_mutex.unlock();
 
-    *can_add_new = true;
+    state->can_add_new = true;
 }

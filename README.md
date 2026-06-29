@@ -1,6 +1,6 @@
 # FFmpeg & OpenGL & ImGui videoplayer (1000 lines)
 
-[demo.webm](https://github.com/user-attachments/assets/d07a003b-c68e-4858-b9c7-8347168189aa)
+[demo.webm](https://github.com/user-attachments/assets/17fb360f-af61-412b-934f-60b5bc47ca24)
 
 - This is part of a larger project for web video streaming
 - Cmake parts for emscritpen won't work as they require ../web folder, which you naturally won't have, to build without emscripten just ignore it, to build with emscritpen either create the web folder in upper directory or change the `cmake/Packages.cmake`

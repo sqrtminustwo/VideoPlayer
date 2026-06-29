@@ -55,12 +55,10 @@ if(EMSCRIPTEN)
     )
 
     target_link_options(${PROJECT_NAME} PRIVATE
-        -sUSE_GLFW=3
-        -sUSE_WEBGL2=1
-        -sMIN_WEBGL_VERSION=2
-        -sMAX_WEBGL_VERSION=2
-    )
-    target_link_options(${PROJECT_NAME} PRIVATE
+        "-pthread"
+        "-sPTHREAD_POOL_SIZE=4"
+        "-sPROXY_TO_PTHREAD=1"      # <-- This is the key for modern builds
+        "-sUSE_PTHREADS=1"          # <-- Explicitly enable pthreads
         "-sUSE_GLFW=3"
         "-sUSE_WEBGL2=1"
         "-sALLOW_MEMORY_GROWTH=1"

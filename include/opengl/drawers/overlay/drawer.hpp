@@ -2,6 +2,7 @@
 #define OVERLAY_DRAWER_H
 
 #include "types/types.hpp"
+#include <mutex>
 
 namespace Overlay {
 

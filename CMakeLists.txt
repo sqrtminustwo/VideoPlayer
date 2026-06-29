@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.20)
 project(WebScreenShare LANGUAGES C CXX)
 
+if(EMSCRIPTEN)
+    add_compile_options("-pthread")
+    add_link_options("-pthread")
+endif()
+
 # C++ settings
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

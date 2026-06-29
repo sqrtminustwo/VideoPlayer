@@ -3,6 +3,7 @@
 
 #include "types/types.hpp"
 #include <GLFW/glfw3.h>
+#include <mutex>
 
 struct State {
     bool can_add_new = true;

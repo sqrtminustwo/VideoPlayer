@@ -89,7 +89,8 @@ int VideoPlayer::set_video(const string &filename) {
 
     AVIOContext *avio_ctx = NULL;
     uint8_t *buffer = NULL, *avio_ctx_buffer = NULL;
-    size_t buffer_size, avio_ctx_buffer_size = 4096;
+    // 1 MiB
+    size_t buffer_size, avio_ctx_buffer_size = 1024 * 1024;
 
     /* slurp file content into buffer */
     ret = av_file_map(filename.c_str(), &buffer, &buffer_size, 0, NULL);

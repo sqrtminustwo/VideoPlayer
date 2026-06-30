@@ -54,18 +54,6 @@ if(EMSCRIPTEN)
             INTERFACE_INCLUDE_DIRECTORIES "${GLAD_PATH}/include"
     )
 
-    target_link_options(${PROJECT_NAME} PRIVATE
-        "-pthread"
-        "-sPTHREAD_POOL_SIZE=4"
-        "-sUSE_GLFW=3"
-        "-sUSE_WEBGL2=1"
-        "-sINITIAL_MEMORY=512MB"
-        "SHELL:--js-library ${CMAKE_CURRENT_SOURCE_DIR}/../web/capi.js"
-        "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/shaders@shaders"
-        "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts@assets/fonts"
-        "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/assets/long_mountains_cut_yuv420.mp4@assets/long_mountains_cut_yuv420.mp4"
-        "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/assets/jungle_cut_yuv420.mp4@assets/jungle_cut_yuv420.mp4"
-    )
     target_link_libraries(${PROJECT_NAME} PRIVATE glad)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         SUFFIX ".js"

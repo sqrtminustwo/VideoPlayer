@@ -12,13 +12,16 @@
 #include "imgui_impl_glfw.h"
 
 extern "C" {
-void capiTest();
+void fetchFrames(int, int, uint8_t *);
 }
 #endif
 
 int main(int argc, char **argv) {
 #ifdef __EMSCRIPTEN__
-    capiTest();
+    uint8_t *buffer = (uint8_t *)malloc(sizeof(uint8_t) * 2);
+    fetchFrames(1, 2, buffer);
+    printf("C++ output: %d, %d\n", buffer[0], buffer[1]);
+    free(buffer);
 #endif
 
     if (argc < 2) {

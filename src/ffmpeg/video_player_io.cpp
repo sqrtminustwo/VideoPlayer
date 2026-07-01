@@ -9,11 +9,20 @@ extern "C" {
 #include <libavutil/file.h>
 }
 
+// capi.js
+#ifdef __EMSCRIPTEN__
+extern "C" {
+void fetchFrames(int offset, int length, uint8_t *);
+int getTotalSize();
+}
+#endif
+
 using namespace std;
 
 VideoPlayer::~VideoPlayer() {
-    //
+#ifndef __EMSCRIPTEN__
     av_file_unmap(bd.base, bd.total_size - bd.offset);
+#endif
 }
 
 frame_ptr VideoPlayer::make_frame_ptr() {
@@ -58,8 +67,12 @@ static int read_packet(void *opaque, uint8_t *buf, int buf_size) {
 
     if (buf_size <= 0) return AVERROR_EOF; // End of file
 
-    // Copy data to FFmpeg's buffer
+#ifdef __EMSCRIPTEN__
+    fetchFrames(bd->offset, buf_size, buf);
+#else
     memcpy(buf, bd->base + bd->offset, buf_size);
+#endif
+
     bd->offset += buf_size;
 
     return buf_size;
@@ -88,9 +101,15 @@ int VideoPlayer::set_video(const string &filename) {
     int ret;
 
     AVIOContext *avio_ctx = NULL;
-    uint8_t *buffer = NULL, *avio_ctx_buffer = NULL;
+    uint8_t *avio_ctx_buffer = NULL;
     // 1 MiB
-    size_t buffer_size, avio_ctx_buffer_size = 1024 * 1024;
+    size_t avio_ctx_buffer_size = 1024 * 1024;
+
+#ifdef __EMSCRIPTEN__
+    bd.total_size = getTotalSize();
+#else
+    uint8_t *buffer = NULL;
+    size_t buffer_size;
 
     /* slurp file content into buffer */
     ret = av_file_map(filename.c_str(), &buffer, &buffer_size, 0, NULL);
@@ -102,6 +121,7 @@ int VideoPlayer::set_video(const string &filename) {
     /* fill opaque structure used by the AVIOContext read callback */
     bd.base = buffer;
     bd.total_size = buffer_size;
+#endif
 
     // already allocated in member variable
     auto format_ptr = fmt_ctx.get();

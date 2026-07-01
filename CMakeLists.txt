@@ -48,8 +48,6 @@ if(EMSCRIPTEN)
         "SHELL:--js-library ${CMAKE_CURRENT_SOURCE_DIR}/../web/capi.js"
         "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/shaders@shaders"
         "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts@assets/fonts"
-        "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/assets/long_mountains_cut_yuv420.mp4@assets/long_mountains_cut_yuv420.mp4"
-        "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/assets/jungle_cut_yuv420.mp4@assets/jungle_cut_yuv420.mp4"
     )
 endif()
 

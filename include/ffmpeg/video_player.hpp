@@ -7,7 +7,10 @@
 #include <string>
 
 struct buffer_data {
-    uint8_t *base;     // Fixed pointer to the start of the file in memory
+#ifndef __EMSCRIPTEN__
+    uint8_t *base; // Fixed pointer to the start of the file in memory
+    // preprocessor directive saves a whopping 1 byte
+#endif
     size_t total_size; // Fixed total size of the file
     size_t offset;     // Current reading position
 };

@@ -2,6 +2,7 @@
 #include "utils/utils.hpp"
 #include <chrono>
 #include <string>
+#include <thread>
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -96,7 +97,12 @@ static int64_t seek(void *opaque, int64_t offset, int whence) {
     return bd->offset;
 }
 
-int VideoPlayer::set_video(const string &filename) {
+#ifdef __EMSCRIPTEN__
+int VideoPlayer::set_video()
+#else
+int VideoPlayer::set_video(const std::string &filename)
+#endif
+{
     const AVCodec *dec;
     int ret;
 
@@ -151,19 +157,19 @@ int VideoPlayer::set_video(const string &filename) {
 
     ret = avformat_open_input(&format_ptr, NULL, NULL, NULL);
     if (ret < 0) {
-        fprintf(stderr, "Could not open input\n");
+        printf("Could not open input\n");
         return -1;
     }
 
     if ((ret = avformat_find_stream_info(format_ptr, NULL)) < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Cannot find stream information\n");
+        printf("Cannot find stream information\n");
         return ret;
     }
 
     /* select the video stream */
     ret = av_find_best_stream(format_ptr, AVMEDIA_TYPE_VIDEO, -1, -1, &dec, 0);
     if (ret < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Cannot find a video stream in the input file\n");
+        printf("Cannot find a video stream in the input file\n");
         return ret;
     }
     video_stream_index = ret;
@@ -171,20 +177,23 @@ int VideoPlayer::set_video(const string &filename) {
     /* create decoding context */
     dec_ctx = make_decoder_ptr(dec);
     auto dec_ptr = dec_ctx.get();
-    if (!dec_ctx) return AVERROR(ENOMEM);
+    if (!dec_ctx) {
+        printf("Failed to create decoder");
+        return AVERROR(ENOMEM);
+    }
 
     avcodec_parameters_to_context(dec_ptr, fmt_ctx->streams[video_stream_index]->codecpar);
     time_base = av_q2d(fmt_ctx->streams[video_stream_index]->time_base);
 
     /* init the video decoder */
     if ((ret = avcodec_open2(dec_ptr, dec, NULL)) < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Cannot open video decoder\n");
+        printf("Cannot open video decoder\n");
         return ret;
     }
 
     aspect_ratio = AspectRatio(dec_ptr->width, dec_ptr->height);
 
-    started_playing_loaded_video = false;
+    state = VIDEO_SET_NOT_PLAYED;
 
     total_duration = chrono::duration<float>(fmt_ctx->duration / AV_TIME_BASE);
     total_duration_str = duration_to_string(total_duration);
@@ -240,13 +249,13 @@ double VideoPlayer::front_frame_timestamp_in_seconds() {
 }
 
 frame_ptr VideoPlayer::operator()() {
-    if (fmt_ctx.get() == nullptr || dec_ctx.get() == nullptr) {
+    if (state == VIDEO_NOT_SET) {
         printDebug("No video set, can't play!");
         return nullptr;
     }
 
     bool video_paused = pause.paused_now && last_frame;
-    if (video_paused) return last_frame;
+    if (video_paused || state == SETTING_PLAYED_DURATION) return last_frame;
     if (frames_queue.empty() && !load_more_frames()) {
         // File ended
         played_duration = total_duration;
@@ -255,8 +264,8 @@ frame_ptr VideoPlayer::operator()() {
 
     auto now = chrono::system_clock::now();
 
-    if (!started_playing_loaded_video) {
-        started_playing_loaded_video = true;
+    if (state == VIDEO_SET_NOT_PLAYED) {
+        state = VIDEO_PLAYING;
         start_time = now;
     }
 
@@ -287,6 +296,14 @@ void VideoPlayer::skip_seconds_forward(bool forward) {
     else set_played_duration(played_duration - duration);
 }
 
+int VideoPlayer::seek_ts(int64_t &ts) {
+    return avformat_seek_file(fmt_ctx.get(), video_stream_index, 0, ts, ts, AVSEEK_FLAG_BACKWARD);
+}
+void VideoPlayer::skip_frames() {
+    frames_queue.clear();
+    load_more_frames();
+}
+
 void VideoPlayer::set_played_duration(const duration &duration) {
     // Duration below 0, exceeds video length -> don't do anything
     if ((duration < chrono::duration<float>(0)) || (duration > total_duration)) return;
@@ -300,10 +317,6 @@ void VideoPlayer::set_played_duration(const duration &duration) {
     if (duration > played_duration) this->start_time -= make_diff(duration, played_duration);
     else if (duration < played_duration) this->start_time += make_diff(played_duration, duration);
 
-    double duration_in_seconds = chrono::duration_cast<chrono::seconds>(duration).count();
-    int64_t ts =
-        av_rescale_q(duration_in_seconds, {1, 1}, fmt_ctx->streams[video_stream_index]->time_base);
-
     /*
      * There seem to be no problem with seeking forward in time
      * seeking backwards requires multiple same avformat_seek_file
@@ -312,34 +325,33 @@ void VideoPlayer::set_played_duration(const duration &duration) {
      * skill issue
      */
 
-    auto seek = [&]() {
-        return avformat_seek_file(
-            fmt_ctx.get(),
-            video_stream_index,
-            0,
-            ts,
-            ts,
-            AVSEEK_FLAG_BACKWARD
+    state = SETTING_PLAYED_DURATION;
+    auto duration_setting_thread = std::thread([&, duration]() {
+        double duration_in_seconds = chrono::duration_cast<chrono::seconds>(duration).count();
+        int64_t ts = av_rescale_q(
+            duration_in_seconds,
+            {1, 1},
+            fmt_ctx->streams[video_stream_index]->time_base
         );
-    };
-    auto skip = [&]() {
-        frames_queue.clear();
+
+        // initial
+        if (seek_ts(ts) < 0) return;
         load_more_frames();
-    };
 
-    // initial
-    if (seek() < 0) return;
-    load_more_frames();
+        auto old_played_duration = played_duration;
+        played_duration = duration;
 
-    if (duration < played_duration) {
-        while (front_frame_timestamp_in_seconds() > duration_in_seconds) {
-            frames_queue.clear();
-            skip();
+        if (duration < old_played_duration) {
+            while (front_frame_timestamp_in_seconds() > duration_in_seconds) {
+                frames_queue.clear();
+                skip_frames();
+            }
         }
-    }
 
-    // skip to real seeked time
-    while (front_frame_timestamp_in_seconds() < duration_in_seconds) skip();
+        // skip to real seeked time
+        while (front_frame_timestamp_in_seconds() < duration_in_seconds) skip_frames();
 
-    played_duration = duration;
+        if (state == SETTING_PLAYED_DURATION) state = VIDEO_PLAYING;
+    });
+    duration_setting_thread.detach();
 }

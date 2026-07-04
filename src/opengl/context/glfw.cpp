@@ -44,7 +44,7 @@ Context::GLFW::GLFW() {
 }
 
 Context::GLFW::~GLFW() {
-    printf("called GLFW destructor\n");
+    // printf("called GLFW destructor\n");
     glfwDestroyWindow(window);
     glfwTerminate();
 }

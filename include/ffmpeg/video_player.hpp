@@ -5,6 +5,14 @@
 #include "types/types.hpp"
 #include <deque>
 #include <string>
+#include <atomic>
+
+enum VideoPlayerState {
+    VIDEO_NOT_SET,
+    VIDEO_SET_NOT_PLAYED,
+    VIDEO_PLAYING,
+    SETTING_PLAYED_DURATION
+};
 
 struct buffer_data {
 #ifndef __EMSCRIPTEN__
@@ -28,7 +36,7 @@ class VideoPlayer {
     // so that video is never actually done
     // until it is closed (or an error occured)
     frame_ptr last_frame;
-    bool started_playing_loaded_video = false;
+    std::atomic<VideoPlayerState> state{VIDEO_NOT_SET};
     double time_base = 0;
     time_point start_time;
 
@@ -52,8 +60,14 @@ class VideoPlayer {
 
     ~VideoPlayer();
 
+#ifdef __EMSCRIPTEN__
+    int set_video();
+#else
     int set_video(const std::string &filename);
+#endif
 
+    int seek_ts(int64_t &);
+    void skip_frames();
     void set_played_duration(const duration &);
     void skip_seconds_forward(bool forward);
 

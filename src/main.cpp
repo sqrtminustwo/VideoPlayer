@@ -17,14 +17,19 @@ void fetchFrames(int, int, uint8_t *);
 #endif
 
 int main(int argc, char **argv) {
+    auto player = std::make_shared<VideoPlayer>();
+#ifdef __EMSCRIPTEN__
+    auto ret = player->set_video();
+#else
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <video>\n", argv[0]);
         exit(0);
     }
     auto filename = argv[1];
 
-    auto player = std::make_shared<VideoPlayer>();
     auto ret = player->set_video(filename);
+#endif
+
     if (ret < 0) {
         printf("Error setting video!\n");
         exit(1);

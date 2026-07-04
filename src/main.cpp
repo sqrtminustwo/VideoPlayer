@@ -1,5 +1,6 @@
 #include "ffmpeg/video_player.hpp"
 #include "fonts/fonts.hpp"
+#include "imgui_internal.h"
 #include "opengl/drawers/overlay/components/controller.hpp"
 #include "opengl/drawers/overlay/drawer.hpp"
 #include "stb_image.h"

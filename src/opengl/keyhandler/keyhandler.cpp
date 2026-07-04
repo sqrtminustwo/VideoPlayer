@@ -6,10 +6,15 @@
 #include "opengl/context/context.hpp" // IWYU pragma: keep
 #include "ffmpeg/video_player.hpp"    // IWYU pragma: keep
 
+State::State(animated_ptr p) : component{p} {};
+
 KeyHandler::KeyHandler(
     player_ptr player, components_vector &components, std::mutex &components_mutex
 )
-    : player{player}, components{components}, componets_mutex{components_mutex} {}
+    : player{player}, components{components}, componets_mutex{components_mutex},
+      pause{std::make_shared<Overlay::Pause>(player)},
+      backward(std::make_shared<Overlay::Backward>(player)),
+      forward(std::make_shared<Overlay::Forward>(player)) {}
 
 GLFWkeyfun KeyHandler::make_key_callback(opengl_context opengl_context) {
     glfwSetWindowUserPointer(opengl_context->window, this);
@@ -19,59 +24,50 @@ GLFWkeyfun KeyHandler::make_key_callback(opengl_context opengl_context) {
         auto p = action == GLFW_PRESS;
         auto r_or_p = action == GLFW_REPEAT || p;
         if (key == GLFW_KEY_SPACE && p) {
-            keyhandler->make_aimation_thread(
-                std::make_shared<Overlay::Pause>(player),
-                keyhandler->pause
-            );
+            keyhandler->make_aimation_thread(keyhandler->pause);
             player->pause.toggle();
         }
         if (key == GLFW_KEY_LEFT && r_or_p) {
-            keyhandler->make_aimation_thread(
-                std::make_shared<Overlay::Backward>(player),
-                keyhandler->backward
-            );
+            keyhandler->make_aimation_thread(keyhandler->backward);
             player->skip_seconds_forward(false);
         }
         if (key == GLFW_KEY_RIGHT && r_or_p) {
-            keyhandler->make_aimation_thread(
-                std::make_shared<Overlay::Forward>(player),
-                keyhandler->forward
-            );
+            keyhandler->make_aimation_thread(keyhandler->forward);
             player->skip_seconds_forward(true);
         }
     };
 }
 
-void KeyHandler::make_aimation_thread(animated_ptr component, State &state) {
+void KeyHandler::make_aimation_thread(State &state) {
     if (state.can_add_new) {
-        std::thread t(&KeyHandler::animate, this, component, &state);
+        std::thread t(&KeyHandler::animate, this, &state);
         t.detach();
     } else state.reset_opacity = true;
 }
 
-void KeyHandler::animate(animated_ptr component, State *state) {
+void KeyHandler::animate(State *state) {
     state->can_add_new = false;
 
     componets_mutex.lock();
-    components.push_back(component);
+    components.push_back(state->component);
     componets_mutex.unlock();
 
-    while (component->opacity < 1.0) {
-        component->opacity += 0.02;
+    while (state->component->opacity < 1.0) {
+        state->component->opacity += 0.02;
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
-    while (component->opacity > 0.) {
+    while (state->component->opacity > 0.) {
         if (state->reset_opacity) {
-            component->opacity = 1;
+            state->component->opacity = 1;
             state->reset_opacity = false;
         }
-        component->opacity -= 0.02;
+        state->component->opacity -= 0.02;
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     componets_mutex.lock();
-    auto pos = std::find(components.begin(), components.end(), component);
+    auto pos = std::find(components.begin(), components.end(), state->component);
     if (pos != components.end()) components.erase(pos);
     componets_mutex.unlock();
 

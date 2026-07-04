@@ -1,4 +1,4 @@
-#include "ffmpeg/actions/pause.hpp"
+#include "ffmpeg/pause.hpp"
 
 void Pause::toggle() {
     if (!paused_now) pause_time = std::chrono::system_clock::now();

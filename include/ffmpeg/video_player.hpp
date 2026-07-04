@@ -1,7 +1,7 @@
 #ifndef VIDEO_PLAYER_H
 #define VIDEO_PLAYER_H
 
-#include "ffmpeg/actions/pause.hpp"
+#include "ffmpeg/pause.hpp"
 #include "types/types.hpp"
 #include <deque>
 #include <string>

@@ -50,13 +50,12 @@ int main(int argc, char **argv) {
 
     init_imgui_fonts(opengl_context->main_scale);
 
-    // Will be expanded by animated icons dynamically, thats why vector
     components_container components;
     components[CONTROLLER] = std::make_shared<Overlay::Controller>(player);
     components[PAUSE] = std::make_shared<Overlay::Pause>(player);
+    components[SPINNER] = std::make_shared<Overlay::Spinner>(player);
     components[BACKWARD] = std::make_shared<Overlay::Backward>();
     components[FORWARD] = std::make_shared<Overlay::Forward>();
-    components[SPINNER] = std::make_shared<Overlay::Spinner>(player);
 
     bool show_demo_window = true;
     bool p_open = true;

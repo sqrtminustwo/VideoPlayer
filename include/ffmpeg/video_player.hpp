@@ -50,16 +50,18 @@ class VideoPlayer {
 
     double front_frame_timestamp_in_seconds();
 
+    int seek_ts(int64_t &);
+    void skip_frames();
+
   public:
     AspectRatio aspect_ratio{16, 9};
     std::string total_duration_str;
     duration total_duration;
     duration played_duration;
     Pause pause;
-    bool is_loading();
     int skip_seconds = 5;
 
-    ~VideoPlayer();
+    bool is_loading();
 
 #ifdef __EMSCRIPTEN__
     int set_video();
@@ -67,8 +69,6 @@ class VideoPlayer {
     int set_video(const std::string &filename);
 #endif
 
-    int seek_ts(int64_t &);
-    void skip_frames();
     void set_played_duration(const duration &);
     void skip_seconds_forward(bool forward);
 
@@ -78,6 +78,8 @@ class VideoPlayer {
      *  @return AVFrame* if video ended null_ptr
      */
     frame_ptr operator()();
+
+    ~VideoPlayer();
 };
 
 #endif

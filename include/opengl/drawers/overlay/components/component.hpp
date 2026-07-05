@@ -11,7 +11,7 @@ struct Component {
 
   protected:
     bool open = true;
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration |
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration |
                                     ImGuiWindowFlags_AlwaysAutoResize |
                                     ImGuiWindowFlags_NoSavedSettings |
                                     ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;

@@ -56,6 +56,7 @@ class VideoPlayer {
     duration total_duration;
     duration played_duration;
     Pause pause;
+    bool is_loading();
     int skip_seconds = 5;
 
     ~VideoPlayer();

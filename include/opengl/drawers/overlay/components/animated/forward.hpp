@@ -8,12 +8,10 @@ namespace Overlay {
 
 struct Forward : public Animated {
 
-    Forward(player_ptr);
+    Forward();
 
   private:
     const char *get_icon() override;
-
-  private:
     virtual void set_window_pos() override;
 };
 

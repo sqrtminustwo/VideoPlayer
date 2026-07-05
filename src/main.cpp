@@ -1,16 +1,20 @@
 #include "ffmpeg/video_player.hpp"
 #include "fonts/fonts.hpp"
-#include "imgui_internal.h"
+#include "opengl/drawers/overlay/components/animated/backward.hpp"
+#include "opengl/drawers/overlay/components/animated/forward.hpp"
+#include "opengl/drawers/overlay/components/animated/pause.hpp"
+#include "opengl/drawers/overlay/components/animated/spinner.hpp"
 #include "opengl/drawers/overlay/components/controller.hpp"
 #include "opengl/drawers/overlay/drawer.hpp"
 #include "stb_image.h"
 #include "opengl/drawers/frame/drawer_yuv420.hpp"
-#include "emscripten/emscripten_mainloop_stub.h" // IWYU pragma: keep
 #include "opengl/keyhandler/keyhandler.hpp"
+#include <array>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #include "imgui_impl_glfw.h"
+#include "emscripten/emscripten_mainloop_stub.h"
 
 extern "C" {
 void fetchFrames(int, int, uint8_t *);
@@ -47,18 +51,22 @@ int main(int argc, char **argv) {
     init_imgui_fonts(opengl_context->main_scale);
 
     // Will be expanded by animated icons dynamically, thats why vector
-    components_vector components = {std::make_shared<Overlay::Controller>(player)};
-    std::mutex components_mutex;
+    components_container components;
+    components[CONTROLLER] = std::make_shared<Overlay::Controller>(player);
+    components[PAUSE] = std::make_shared<Overlay::Pause>(player);
+    components[BACKWARD] = std::make_shared<Overlay::Backward>();
+    components[FORWARD] = std::make_shared<Overlay::Forward>();
+    components[SPINNER] = std::make_shared<Overlay::Spinner>(player);
 
     bool show_demo_window = true;
     bool p_open = true;
 
     DrawerYUV420 frame_drawer{opengl_context};
-    Overlay::Drawer overlay_drawer{components_mutex};
+    Overlay::Drawer overlay_drawer{};
 
     frame_ptr frame;
 
-    KeyHandler keyhandler{player, components, components_mutex};
+    KeyHandler keyhandler{player, components};
 
     glfwSetKeyCallback(opengl_context->window, keyhandler.make_key_callback(opengl_context));
 

@@ -3,18 +3,15 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-Overlay::Drawer::Drawer(std::mutex &components_mutex) : components_mutex{components_mutex} {}
+Overlay::Drawer::Drawer() {}
 
-void Overlay::Drawer::operator()(bool *overlay_open, components_vector &components) {
+void Overlay::Drawer::operator()(bool *overlay_open, components_container &components) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    if (*overlay_open) {
-        components_mutex.lock();
+    if (*overlay_open)
         for (auto &component : components) (*component)();
-        components_mutex.unlock();
-    }
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

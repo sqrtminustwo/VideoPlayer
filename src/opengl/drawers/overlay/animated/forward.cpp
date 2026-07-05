@@ -3,7 +3,7 @@
 #include "ffmpeg/video_player.hpp" // IWYU pragma: keep
 #include "imgui.h"
 
-Overlay::Forward::Forward(player_ptr player) : Animated{player, "Forward"} {}
+Overlay::Forward::Forward() : Animated{"Forward"} {}
 
 const char *Overlay::Forward::get_icon() { return ICON_FA_FORWARD; }
 

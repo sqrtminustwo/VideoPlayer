@@ -255,7 +255,7 @@ frame_ptr VideoPlayer::operator()() {
     }
 
     bool video_paused = pause.paused_now && last_frame;
-    if (video_paused || state == SETTING_PLAYED_DURATION) return last_frame;
+    if (video_paused || is_loading()) return last_frame;
     if (frames_queue.empty() && !load_more_frames()) {
         // File ended
         played_duration = total_duration;
@@ -306,7 +306,8 @@ void VideoPlayer::skip_frames() {
 
 void VideoPlayer::set_played_duration(const duration &duration) {
     // Duration below 0, exceeds video length -> don't do anything
-    if ((duration < chrono::duration<float>(0)) || (duration > total_duration)) return;
+    if (is_loading() || (duration < chrono::duration<float>(0)) || (duration > total_duration))
+        return;
 
     static auto make_diff = [](::duration a, ::duration b) {
         return chrono::duration_cast<typename decltype(this->start_time)::duration>(a - b);
@@ -351,7 +352,9 @@ void VideoPlayer::set_played_duration(const duration &duration) {
         // skip to real seeked time
         while (front_frame_timestamp_in_seconds() < duration_in_seconds) skip_frames();
 
-        if (state == SETTING_PLAYED_DURATION) state = VIDEO_PLAYING;
+        if (is_loading()) state = VIDEO_PLAYING;
     });
     duration_setting_thread.detach();
 }
+
+bool VideoPlayer::is_loading() { return state == SETTING_PLAYED_DURATION; }

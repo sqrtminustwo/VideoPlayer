@@ -2,16 +2,12 @@
 #define OVERLAY_DRAWER_H
 
 #include "types/types.hpp"
-#include <mutex>
 
 namespace Overlay {
 
 struct Drawer {
-    Drawer(std::mutex &components_mutex);
-    void operator()(bool *overlay_open, components_vector &components);
-
-  private:
-    std::mutex &components_mutex;
+    Drawer();
+    void operator()(bool *overlay_open, components_container &components);
 };
 
 } // namespace Overlay

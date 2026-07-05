@@ -3,7 +3,6 @@
 
 #include <array>
 #include <memory>
-#include <vector>
 #include <chrono>
 
 // include minimization
@@ -16,6 +15,7 @@ class AVCodec;
 namespace Overlay {
 class Component;
 class Animated;
+class AnimatedComponentsHandle;
 } // namespace Overlay
 namespace Context {
 class OpenGL;
@@ -32,8 +32,10 @@ using decoder_ptr = std::unique_ptr<AVCodecContext, void (*)(AVCodecContext *)>;
 using packet_ptr = std::unique_ptr<AVPacket, void (*)(AVPacket *)>;
 using avio_ptr = std::unique_ptr<AVIOContext, void (*)(AVIOContext *)>;
 
-using components_vector = std::vector<std::shared_ptr<Overlay::Component>>;
+enum ComponentsIndexes { CONTROLLER = 0, PAUSE, BACKWARD, FORWARD, SPINNER };
+using components_container = std::array<std::shared_ptr<Overlay::Component>, 5>;
 using animated_ptr = std::shared_ptr<Overlay::Animated>;
+using ach = Overlay::AnimatedComponentsHandle &;
 
 using time_point = std::chrono::system_clock::time_point;
 using duration = std::chrono::duration<float>;

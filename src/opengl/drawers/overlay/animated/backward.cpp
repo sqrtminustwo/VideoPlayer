@@ -3,7 +3,7 @@
 #include "ffmpeg/video_player.hpp" // IWYU pragma: keep
 #include "imgui.h"
 
-Overlay::Backward::Backward(player_ptr player) : Animated{player, "Backward"} {}
+Overlay::Backward::Backward() : Animated{"Backward"} {}
 
 const char *Overlay::Backward::get_icon() { return ICON_FA_BACKWARD; }
 

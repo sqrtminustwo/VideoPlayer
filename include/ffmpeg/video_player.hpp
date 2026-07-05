@@ -39,6 +39,7 @@ class VideoPlayer {
     std::atomic<VideoPlayerState> state{VIDEO_NOT_SET};
     double time_base = 0;
     time_point start_time;
+    auto cast_to_start_time(::duration);
 
     frame_ptr make_frame_ptr();
     format_ptr make_format_ptr();

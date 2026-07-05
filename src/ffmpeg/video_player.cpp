@@ -100,7 +100,7 @@ static int64_t seek(void *opaque, int64_t offset, int whence) {
 #ifdef __EMSCRIPTEN__
 int VideoPlayer::set_video()
 #else
-int VideoPlayer::set_video(const std::string &filename)
+int VideoPlayer::set_video(const string &filename)
 #endif
 {
     const AVCodec *dec;
@@ -274,7 +274,7 @@ frame_ptr VideoPlayer::operator()() {
         pause.adjust_player = false;
     }
 
-    played_duration = chrono::duration_cast<chrono::duration<float>>(now - start_time);
+    played_duration = duration_diff(now, start_time);
 
     if (!frames_queue.empty()) {
         auto frame = frames_queue.front();
@@ -304,7 +304,13 @@ void VideoPlayer::skip_frames() {
     load_more_frames();
 }
 
+auto VideoPlayer::cast_to_start_time(::duration d) {
+    return chrono::duration_cast<typename decltype(this->start_time)::duration>(d);
+}
+
 void VideoPlayer::set_played_duration(const duration &duration) {
+    const auto started_setting = chrono::system_clock::now();
+
     // Duration below 0, exceeds video length -> don't do anything
     if (is_loading() || (duration < chrono::duration<float>(0)) || (duration > total_duration))
         return;
@@ -315,8 +321,13 @@ void VideoPlayer::set_played_duration(const duration &duration) {
 
     // old frames are now invalid
     frames_queue.clear();
-    if (duration > played_duration) this->start_time -= make_diff(duration, played_duration);
-    else if (duration < played_duration) this->start_time += make_diff(played_duration, duration);
+    // if (duration > played_duration) this->start_time -= make_diff(duration, played_duration);
+    if (duration > played_duration)
+        this->start_time -= cast_to_start_time(duration - played_duration);
+    // else if (duration < played_duration) this->start_time += make_diff(played_duration,
+    // duration);
+    else if (duration < played_duration)
+        this->start_time += cast_to_start_time(played_duration - duration);
 
     /*
      * There seem to be no problem with seeking forward in time
@@ -327,13 +338,10 @@ void VideoPlayer::set_played_duration(const duration &duration) {
      */
 
     state = SETTING_PLAYED_DURATION;
-    auto duration_setting_thread = std::thread([&, duration]() {
-        double duration_in_seconds = chrono::duration_cast<chrono::seconds>(duration).count();
-        int64_t ts = av_rescale_q(
-            duration_in_seconds,
-            {1, 1},
-            fmt_ctx->streams[video_stream_index]->time_base
-        );
+    auto duration_setting_thread = thread([&, duration, started_setting]() {
+        double duration_count = chrono::duration<double>(duration).count();
+        int64_t ts =
+            av_rescale_q(duration_count, {1, 1}, fmt_ctx->streams[video_stream_index]->time_base);
 
         // initial
         if (seek_ts(ts) < 0) return;
@@ -343,16 +351,20 @@ void VideoPlayer::set_played_duration(const duration &duration) {
         played_duration = duration;
 
         if (duration < old_played_duration) {
-            while (front_frame_timestamp_in_seconds() > duration_in_seconds) {
+            while (front_frame_timestamp_in_seconds() > duration_count) {
                 frames_queue.clear();
                 skip_frames();
             }
         }
 
         // skip to real seeked time
-        while (front_frame_timestamp_in_seconds() < duration_in_seconds) skip_frames();
+        while (front_frame_timestamp_in_seconds() < duration_count) skip_frames();
 
-        if (is_loading()) state = VIDEO_PLAYING;
+        if (is_loading()) {
+            state = VIDEO_PLAYING;
+            const auto ended_setting = chrono::system_clock::now();
+            start_time += cast_to_start_time(ended_setting - started_setting);
+        }
     });
     duration_setting_thread.detach();
 }

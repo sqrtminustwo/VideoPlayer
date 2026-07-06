@@ -6,6 +6,7 @@
 #include <deque>
 #include <string>
 #include <atomic>
+#include <mutex>
 
 enum VideoPlayerState {
     VIDEO_NOT_SET,

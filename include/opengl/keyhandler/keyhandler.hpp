@@ -3,10 +3,11 @@
 
 #include "types/types.hpp"
 #include <GLFW/glfw3.h>
+#include <atomic>
 
 struct State {
-    bool can_add_new = true;
-    bool reset_opacity = false;
+    std::atomic_bool can_add_new = true;
+    std::atomic_bool reset_opacity = false;
 };
 
 struct KeyHandler {

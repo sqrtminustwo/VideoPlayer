@@ -249,13 +249,16 @@ double VideoPlayer::front_frame_timestamp_in_seconds() {
 }
 
 frame_ptr VideoPlayer::operator()() {
+    // no locks / mutexes needed below as state is atomic
+    // and no action will be done until skipping thread is working
+    if (is_loading()) return last_frame;
+
     if (state == VIDEO_NOT_SET) {
         printDebug("No video set, can't play!");
         return nullptr;
     }
 
-    bool video_paused = pause.paused_now && last_frame;
-    if (video_paused || is_loading()) return last_frame;
+    if (pause.paused_now && last_frame) return last_frame;
     if (frames_queue.empty() && !load_more_frames()) {
         // File ended
         played_duration = total_duration;
@@ -292,8 +295,10 @@ frame_ptr VideoPlayer::operator()() {
 
 void VideoPlayer::skip_seconds_forward(bool forward) {
     auto duration = chrono::seconds(skip_seconds);
-    if (forward) set_played_duration(played_duration + duration);
-    else set_played_duration(played_duration - duration);
+    played_duration_mutex.lock();
+    auto new_duration = forward ? played_duration + duration : played_duration - duration;
+    played_duration_mutex.unlock();
+    set_played_duration(new_duration);
 }
 
 int VideoPlayer::seek_ts(int64_t &ts) {
@@ -309,11 +314,11 @@ auto VideoPlayer::cast_to_start_time(::duration d) {
 }
 
 void VideoPlayer::set_played_duration(const duration &duration) {
-    const auto started_setting = chrono::system_clock::now();
-
     // Duration below 0, exceeds video length -> don't do anything
     if (is_loading() || (duration < chrono::duration<float>(0)) || (duration > total_duration))
         return;
+
+    const auto started_setting = chrono::system_clock::now();
 
     static auto make_diff = [](::duration a, ::duration b) {
         return chrono::duration_cast<typename decltype(this->start_time)::duration>(a - b);
@@ -321,11 +326,8 @@ void VideoPlayer::set_played_duration(const duration &duration) {
 
     // old frames are now invalid
     frames_queue.clear();
-    // if (duration > played_duration) this->start_time -= make_diff(duration, played_duration);
     if (duration > played_duration)
         this->start_time -= cast_to_start_time(duration - played_duration);
-    // else if (duration < played_duration) this->start_time += make_diff(played_duration,
-    // duration);
     else if (duration < played_duration)
         this->start_time += cast_to_start_time(played_duration - duration);
 
@@ -347,8 +349,10 @@ void VideoPlayer::set_played_duration(const duration &duration) {
         if (seek_ts(ts) < 0) return;
         load_more_frames();
 
+        played_duration_mutex.lock();
         auto old_played_duration = played_duration;
         played_duration = duration;
+        played_duration_mutex.unlock();
 
         if (duration < old_played_duration) {
             while (front_frame_timestamp_in_seconds() > duration_count) {

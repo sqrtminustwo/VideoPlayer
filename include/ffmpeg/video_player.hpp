@@ -58,6 +58,7 @@ class VideoPlayer {
     AspectRatio aspect_ratio{16, 9};
     std::string total_duration_str;
     duration total_duration;
+    std::mutex played_duration_mutex;
     duration played_duration;
     Pause pause;
     int skip_seconds = 5;

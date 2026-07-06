@@ -7,7 +7,6 @@
 
 struct State {
     std::atomic_bool can_add_new = true;
-    std::atomic_bool reset_opacity = false;
 };
 
 struct KeyHandler {
@@ -25,6 +24,8 @@ struct KeyHandler {
     State pause;
     State backward;
     State forward;
+
+    animated_ptr index_to_animated(ComponentsIndex);
 };
 
 #endif

@@ -3,12 +3,15 @@
 
 #include "opengl/drawers/overlay/components/component.hpp"
 #include "types/types.hpp"
+#include <atomic>
 
 namespace Overlay {
 
 struct Animated : public Component {
-    float opacity = 0.f;
+    std::atomic<float> opacity = 0.f;
     static const unsigned int icon_size = 100;
+    // Default centered
+    float x_pos_fraction = 1. / 2.;
 
     void operator()() override;
 
@@ -17,7 +20,6 @@ struct Animated : public Component {
   protected:
     // Default is centered
     virtual bool should_draw();
-    virtual void set_window_pos();
     virtual const char *get_icon() = 0;
     virtual void local_drawer();
 

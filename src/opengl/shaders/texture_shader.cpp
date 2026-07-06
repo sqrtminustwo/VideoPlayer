@@ -2,12 +2,14 @@
 #include <glad.h>
 #include <GLFW/glfw3.h>
 
-TextureShader::TextureShader(std::string vertexPath, std::string fragmentPath)
+using namespace std;
+
+TextureShader::TextureShader(string vertexPath, string fragmentPath)
     : Shader(vertexPath, fragmentPath) {
     use();
-    glUniform1i(glGetUniformLocation(ID, "texture_y"), 0);
-    glUniform1i(glGetUniformLocation(ID, "texture_u"), 1);
-    glUniform1i(glGetUniformLocation(ID, "texture_v"), 2);
+    setInt("texture_y", 0);
+    setInt("texture_u", 1);
+    setInt("texture_v", 2);
 
     for (int i = 0; i < textures.size(); i++) glGenTextures(1, textures.at(i));
 }

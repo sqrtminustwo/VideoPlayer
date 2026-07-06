@@ -57,6 +57,8 @@ packet_ptr VideoPlayer::make_packet_ptr() {
     return packet_ptr(av_packet_alloc(), [](AVPacket *f) { av_packet_free(&f); });
 }
 
+bool VideoPlayer::is_loading() { return state == SETTING_PLAYED_DURATION; }
+
 // https://www.ffmpeg.org/doxygen/2.3/avio_reading_8c-example.html#_a10
 // https://www.ffmpeg.org/doxygen/2.3/aviobuf_8c_source.html#l00200
 
@@ -155,10 +157,9 @@ int VideoPlayer::set_video(const string &filename)
 
     fmt_ctx->pb = avio_ctx;
 
-    ret = avformat_open_input(&format_ptr, NULL, NULL, NULL);
-    if (ret < 0) {
+    if ((ret = avformat_open_input(&format_ptr, NULL, NULL, NULL)) < 0) {
         printf("Could not open input\n");
-        return -1;
+        return ret;
     }
 
     if ((ret = avformat_find_stream_info(format_ptr, NULL)) < 0) {
@@ -167,8 +168,7 @@ int VideoPlayer::set_video(const string &filename)
     }
 
     /* select the video stream */
-    ret = av_find_best_stream(format_ptr, AVMEDIA_TYPE_VIDEO, -1, -1, &dec, 0);
-    if (ret < 0) {
+    if ((ret = av_find_best_stream(format_ptr, AVMEDIA_TYPE_VIDEO, -1, -1, &dec, 0)) < 0) {
         printf("Cannot find a video stream in the input file\n");
         return ret;
     }
@@ -176,11 +176,12 @@ int VideoPlayer::set_video(const string &filename)
 
     /* create decoding context */
     dec_ctx = make_decoder_ptr(dec);
-    auto dec_ptr = dec_ctx.get();
     if (!dec_ctx) {
         printf("Failed to create decoder");
         return AVERROR(ENOMEM);
     }
+
+    auto dec_ptr = dec_ctx.get();
 
     avcodec_parameters_to_context(dec_ptr, fmt_ctx->streams[video_stream_index]->codecpar);
     time_base = av_q2d(fmt_ctx->streams[video_stream_index]->time_base);
@@ -206,6 +207,7 @@ bool VideoPlayer::load_more_frames() {
 
     int frames_queue_size = frames_queue.size();
     int ret;
+
     while (frames_queue_size == frames_queue.size() && packet->stream_index == video_stream_index) {
         ret = avcodec_send_packet(dec_ctx.get(), packet.get());
 
@@ -229,10 +231,9 @@ bool VideoPlayer::load_more_frames() {
             auto frame_ptr = make_frame_ptr();
             ret = avcodec_receive_frame(dec_ctx.get(), frame_ptr.get());
 
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                break;
-            } else if (ret < 0) {
-                av_log(NULL, AV_LOG_ERROR, "Error while receiving a frame from the decoder\n");
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) break;
+            else if (ret < 0) {
+                printf("Error while receiving a frame from the decoder\n");
                 return false;
             }
             if (frame_ptr->width > 0 && frame_ptr->height > 0) frames_queue.push_back(frame_ptr);
@@ -259,13 +260,14 @@ frame_ptr VideoPlayer::operator()() {
     }
 
     if (pause.paused_now && last_frame) return last_frame;
+
     if (frames_queue.empty() && !load_more_frames()) {
         // File ended
         played_duration = total_duration;
         return last_frame;
     }
 
-    auto now = chrono::system_clock::now();
+    auto now = now_f();
 
     if (state == VIDEO_SET_NOT_PLAYED) {
         state = VIDEO_PLAYING;
@@ -280,13 +282,11 @@ frame_ptr VideoPlayer::operator()() {
     played_duration = duration_diff(now, start_time);
 
     if (!frames_queue.empty()) {
-        auto frame = frames_queue.front();
         auto current = front_frame_timestamp_in_seconds();
         auto expected = played_duration.count();
-        // printf("current = %f, expected = %f\n", current, expected);
         if (current <= expected) {
+            last_frame = frames_queue.front();
             frames_queue.pop_front();
-            last_frame = frame;
         }
     }
 
@@ -295,9 +295,11 @@ frame_ptr VideoPlayer::operator()() {
 
 void VideoPlayer::skip_seconds_forward(bool forward) {
     auto duration = chrono::seconds(skip_seconds);
+
     played_duration_mutex.lock();
     auto new_duration = forward ? played_duration + duration : played_duration - duration;
     played_duration_mutex.unlock();
+
     set_played_duration(new_duration);
 }
 
@@ -318,11 +320,7 @@ void VideoPlayer::set_played_duration(const duration &duration) {
     if (is_loading() || (duration < chrono::duration<float>(0)) || (duration > total_duration))
         return;
 
-    const auto started_setting = chrono::system_clock::now();
-
-    static auto make_diff = [](::duration a, ::duration b) {
-        return chrono::duration_cast<typename decltype(this->start_time)::duration>(a - b);
-    };
+    const auto started_setting = now_f();
 
     // old frames are now invalid
     frames_queue.clear();
@@ -354,23 +352,17 @@ void VideoPlayer::set_played_duration(const duration &duration) {
         played_duration = duration;
         played_duration_mutex.unlock();
 
-        if (duration < old_played_duration) {
-            while (front_frame_timestamp_in_seconds() > duration_count) {
-                frames_queue.clear();
-                skip_frames();
-            }
-        }
+        if (duration < old_played_duration)
+            while (front_frame_timestamp_in_seconds() > duration_count) skip_frames();
 
         // skip to real seeked time
         while (front_frame_timestamp_in_seconds() < duration_count) skip_frames();
 
         if (is_loading()) {
             state = VIDEO_PLAYING;
-            const auto ended_setting = chrono::system_clock::now();
+            const auto ended_setting = now_f();
             start_time += cast_to_start_time(ended_setting - started_setting);
         }
     });
     duration_setting_thread.detach();
 }
-
-bool VideoPlayer::is_loading() { return state == SETTING_PLAYED_DURATION; }

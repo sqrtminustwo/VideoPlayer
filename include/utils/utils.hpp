@@ -13,4 +13,6 @@ std::string duration_to_string(duration);
 // initial window dim, so icons do not become bigger on resize (looks goofy)
 std::pair<float, float> get_window_dim();
 
+time_point now_f();
+
 #endif

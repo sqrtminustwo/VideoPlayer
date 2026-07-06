@@ -32,7 +32,7 @@ using decoder_ptr = std::unique_ptr<AVCodecContext, void (*)(AVCodecContext *)>;
 using packet_ptr = std::unique_ptr<AVPacket, void (*)(AVPacket *)>;
 using avio_ptr = std::unique_ptr<AVIOContext, void (*)(AVIOContext *)>;
 
-enum ComponentsIndexes { CONTROLLER = 0, PAUSE, BACKWARD, FORWARD, SPINNER };
+enum ComponentsIndex { CONTROLLER = 0, PAUSE, BACKWARD, FORWARD, SPINNER };
 using components_container = std::array<std::shared_ptr<Overlay::Component>, 5>;
 using animated_ptr = std::shared_ptr<Overlay::Animated>;
 using ach = Overlay::AnimatedComponentsHandle &;

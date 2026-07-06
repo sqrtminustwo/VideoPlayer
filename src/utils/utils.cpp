@@ -19,7 +19,6 @@ string duration_to_string(duration duration) {
     duration -= m;
     auto s = chrono::duration_cast<chrono::seconds>(duration);
 
-    using namespace std;
     ostringstream out;
     out.fill('0');
     out << setw(2) << h.count() << ":" << setw(2) << m.count() << ":" << setw(2) << s.count();
@@ -36,3 +35,5 @@ pair<float, float> get_window_dim() {
 duration duration_diff(time_point a, time_point b) {
     return chrono::duration_cast<chrono::duration<float>>(a - b);
 }
+
+time_point now_f() { return chrono::system_clock::now(); }

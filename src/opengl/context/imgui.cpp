@@ -21,7 +21,6 @@ Context::MyImGui::MyImGui() : OpenGL() {
 }
 
 Context::MyImGui::~MyImGui() {
-    // printf("called ImGui destructor\n");
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

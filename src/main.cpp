@@ -15,14 +15,11 @@
 #include <emscripten.h>
 #include "imgui_impl_glfw.h"
 #include "emscripten/emscripten_mainloop_stub.h"
-
-extern "C" {
-void fetchFrames(int, int, uint8_t *);
-}
 #endif
 
 int main(int argc, char **argv) {
     auto player = std::make_shared<VideoPlayer>();
+
 #ifdef __EMSCRIPTEN__
     auto ret = player->set_video();
 #else

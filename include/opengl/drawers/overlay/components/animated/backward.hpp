@@ -12,7 +12,6 @@ struct Backward : public Animated {
 
   private:
     const char *get_icon() override;
-    virtual void set_window_pos() override;
 };
 
 } // namespace Overlay

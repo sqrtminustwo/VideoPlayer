@@ -17,14 +17,8 @@ Frame::Drawer::Drawer(
 
 void Frame::Drawer::operator()(const frame_ptr &frame, const bool &paused) {
     if (paused) return;
-    shader->use();
 
-    auto yLoc = glGetUniformLocation(shader->ID, "texture_y");
-    glUniform1i(yLoc, 0);
-    auto uLoc = glGetUniformLocation(shader->ID, "texture_u");
-    glUniform1i(uLoc, 1);
-    auto vLoc = glGetUniformLocation(shader->ID, "texture_v");
-    glUniform1i(vLoc, 2);
+    shader->use();
 
     for (int i = 0; i < NUM_OF_TEXTURES; i++) {
         TextureChannel channel = static_cast<TextureChannel>(i);

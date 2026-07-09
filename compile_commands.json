@@ -1,1 +1,182 @@
-build/wasm/compile_commands.json
+[
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/ffmpeg/pause.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/ffmpeg/pause.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/ffmpeg/pause.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/ffmpeg/pause.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/ffmpeg/recorders.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/ffmpeg/recorders.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/ffmpeg/recorders.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/ffmpeg/recorders.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/ffmpeg/video_player.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/ffmpeg/video_player.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/ffmpeg/video_player.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/ffmpeg/video_player.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/fonts/fonts.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/fonts/fonts.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/fonts/fonts.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/fonts/fonts.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/main.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/main.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/main.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/opengl/context/glfw.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/context/glfw.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/context/glfw.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/opengl/context/glfw.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/opengl/context/imgui.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/context/imgui.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/context/imgui.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/opengl/context/imgui.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/opengl/context/opengl.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/context/opengl.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/context/opengl.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/opengl/context/opengl.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/opengl/drawers/frame/drawer.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/frame/drawer.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/frame/drawer.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/opengl/drawers/frame/drawer.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/opengl/drawers/overlay/animated/animated.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/overlay/animated/animated.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/overlay/animated/animated.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/opengl/drawers/overlay/animated/animated.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/opengl/drawers/overlay/animated/backward.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/overlay/animated/backward.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/overlay/animated/backward.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/opengl/drawers/overlay/animated/backward.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/opengl/drawers/overlay/animated/forward.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/overlay/animated/forward.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/overlay/animated/forward.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/opengl/drawers/overlay/animated/forward.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/opengl/drawers/overlay/animated/pause.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/overlay/animated/pause.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/overlay/animated/pause.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/opengl/drawers/overlay/animated/pause.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/opengl/drawers/overlay/animated/spinner.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/overlay/animated/spinner.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/overlay/animated/spinner.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/opengl/drawers/overlay/animated/spinner.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/opengl/drawers/overlay/controller.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/overlay/controller.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/overlay/controller.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/opengl/drawers/overlay/controller.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/opengl/drawers/overlay/drawer.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/overlay/drawer.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/drawers/overlay/drawer.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/opengl/drawers/overlay/drawer.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/opengl/keyhandler/keyhandler.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/keyhandler/keyhandler.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/keyhandler/keyhandler.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/opengl/keyhandler/keyhandler.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/opengl/shaders/shader.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/shaders/shader.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/shaders/shader.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/opengl/shaders/shader.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/opengl/shaders/texture_shader.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/shaders/texture_shader.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/opengl/shaders/texture_shader.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/opengl/shaders/texture_shader.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/types/types.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/types/types.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/types/types.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/types/types.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -DPROJECT_DIR=\\\"/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer\\\" -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/include -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -flto=thin -o CMakeFiles/WebScreenShare.dir/src/utils/utils.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/utils/utils.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/src/utils/utils.cpp",
+  "output": "CMakeFiles/WebScreenShare.dir/src/utils/utils.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/include -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -o CMakeFiles/ffmpeg_circular_buffer.dir/external/ffmpeg-circular-buffer/src/cfb.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/src/cfb.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/ffmpeg-circular-buffer/src/cfb.cpp",
+  "output": "CMakeFiles/ffmpeg_circular_buffer.dir/external/ffmpeg-circular-buffer/src/cfb.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -o CMakeFiles/imgui.dir/external/imgui/backends/imgui_impl_opengl3.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends/imgui_impl_opengl3.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends/imgui_impl_opengl3.cpp",
+  "output": "CMakeFiles/imgui.dir/external/imgui/backends/imgui_impl_opengl3.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -o CMakeFiles/imgui.dir/external/imgui/backends/imgui_impl_glfw.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends/imgui_impl_glfw.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends/imgui_impl_glfw.cpp",
+  "output": "CMakeFiles/imgui.dir/external/imgui/backends/imgui_impl_glfw.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -o CMakeFiles/imgui.dir/external/imgui/imgui.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/imgui.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/imgui.cpp",
+  "output": "CMakeFiles/imgui.dir/external/imgui/imgui.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -o CMakeFiles/imgui.dir/external/imgui/imgui_draw.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/imgui_draw.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/imgui_draw.cpp",
+  "output": "CMakeFiles/imgui.dir/external/imgui/imgui_draw.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -o CMakeFiles/imgui.dir/external/imgui/imgui_tables.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/imgui_tables.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/imgui_tables.cpp",
+  "output": "CMakeFiles/imgui.dir/external/imgui/imgui_tables.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -o CMakeFiles/imgui.dir/external/imgui/imgui_widgets.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/imgui_widgets.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/imgui_widgets.cpp",
+  "output": "CMakeFiles/imgui.dir/external/imgui/imgui_widgets.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang++ -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/backends -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -D__STDC_CONSTANT_MACROS -g -fno-omit-frame-pointer -fsanitize=address -std=c++23 -o CMakeFiles/imgui.dir/external/imgui/imgui_demo.cpp.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/imgui_demo.cpp",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/imgui/imgui_demo.cpp",
+  "output": "CMakeFiles/imgui.dir/external/imgui/imgui_demo.cpp.o"
+},
+{
+  "directory": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/build/clang-debug",
+  "command": "/usr/bin/clang -I/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/fonts -g -o CMakeFiles/glad.dir/external/glad/glad.c.o -c /home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/glad.c",
+  "file": "/home/main-ubuntu/coding/C++Projects/WebStream/VideoPlayer/external/glad/glad.c",
+  "output": "CMakeFiles/glad.dir/external/glad/glad.c.o"
+}
+]

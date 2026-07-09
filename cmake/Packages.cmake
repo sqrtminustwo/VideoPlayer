@@ -14,6 +14,27 @@ target_link_libraries(
     FFmpeg::avdevice FFmpeg::avfilter FFmpeg::avformat FFmpeg::avcodec FFmpeg::swscale FFmpeg::swresample FFmpeg::avutil
 )
 
+# ffmpeg-circular-buffer
+
+set(
+    FFMPEG_CIRCULAR_BUFFER
+    "${CMAKE_CURRENT_SOURCE_DIR}/external/ffmpeg-circular-buffer"
+)
+
+set(
+    FFMPEG_CIRCULAR_BUFFER_SRC
+    ${FFMPEG_CIRCULAR_BUFFER}/src/cfb.cpp
+)
+
+add_library(ffmpeg_circular_buffer STATIC ${FFMPEG_CIRCULAR_BUFFER_SRC})
+
+target_include_directories(ffmpeg_circular_buffer
+    PUBLIC
+        ${FFMPEG_CIRCULAR_BUFFER}/include
+)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC ffmpeg_circular_buffer)
+
 # ImGui
 # https://github.com/ocornut/imgui/pull/1713
 # https://medium.com/@sigmoid90/work-with-vcpkg-on-ubuntu-b484363b1fed

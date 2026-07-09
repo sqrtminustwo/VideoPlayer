@@ -68,7 +68,7 @@ static int read_packet(void *opaque, uint8_t *buf, int buf_size) {
     int bytes_left = bd->total_size - bd->offset;
     buf_size = FFMIN(buf_size, bytes_left);
 
-    if (buf_size <= 0) return AVERROR_EOF; // End of file
+    if (buf_size <= 0) return -1; // End of file
 
 #ifdef __EMSCRIPTEN__
     fetchFrames(bd->offset, buf_size, buf);

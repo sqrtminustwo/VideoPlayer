@@ -1,4 +1,4 @@
-#include "ffmpeg/cyclic_fragment_buffer.hpp"
+#include "cfb.hpp"
 
 int main() {
     CyclicFragmentBuffer bd{10};
@@ -7,15 +7,7 @@ int main() {
     size_t buf_size = 3;
     uint8_t *buf = new uint8_t[buf_size];
 
-    auto rp = [&]() {
-        read_packet(&bd, buf, buf_size);
-        bd.print();
-        print_buf(buf_size, buf);
-        print_delimiter();
-    };
-
-    bd.print();
-    print_delimiter();
+    auto rp = [&]() { read_packet(&bd, buf, buf_size); };
 
     for (int i = 0; i < 10; i++) rp();
 

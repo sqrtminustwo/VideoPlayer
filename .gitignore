@@ -5,3 +5,4 @@ output
 assets/*
 !assets/fonts
 !assets/fonts/*
+Testing/*

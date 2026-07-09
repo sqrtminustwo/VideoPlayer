@@ -40,7 +40,7 @@ void Overlay::Controller::operator()() {
     ImVec2 window_pos_pivot = ImVec2(0.5f, 1.0f);
 
     ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-    ImGui::SetNextWindowSize(ImVec2(work_size.x * 0.985, 80));
+    ImGui::SetNextWindowSize(ImVec2(work_size.x * 0.985, 90));
 
     ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
     ImGui::Begin("Controller", &open, window_flags);

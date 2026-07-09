@@ -110,8 +110,8 @@ int VideoPlayer::set_video(const string &filename)
 
     AVIOContext *avio_ctx = NULL;
     uint8_t *avio_ctx_buffer = NULL;
-    // 1 MiB
-    size_t avio_ctx_buffer_size = 1024 * 1024;
+    // 2 MiB
+    size_t avio_ctx_buffer_size = 2097152;
 
 #ifdef __EMSCRIPTEN__
     bd.total_size = getTotalSize();

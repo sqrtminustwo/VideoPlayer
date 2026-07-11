@@ -11,20 +11,18 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# add_compile_definitions(DEBUG)
 
 # Collect source files
 file(GLOB_RECURSE CPP_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*/*.cpp
 )
-list(REMOVE_ITEM CPP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/ffmpeg/cfb/test.cpp")
-
-set(SOURCES ${CPP_SOURCES} ${C_SOURCES})
 
 set(CMAKE_CXX_FLAGS "-D__STDC_CONSTANT_MACROS")
 
 # Create executable
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${CPP_SOURCES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     PROJECT_DIR="${CMAKE_SOURCE_DIR}"
 )

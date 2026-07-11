@@ -23,7 +23,9 @@ set(
 
 set(
     FFMPEG_CIRCULAR_BUFFER_SRC
-    ${FFMPEG_CIRCULAR_BUFFER}/src/cfb.cpp
+    ${FFMPEG_CIRCULAR_BUFFER}/src/buffer/cfb.cpp
+    ${FFMPEG_CIRCULAR_BUFFER}/src/buffer/fill_guard.cpp
+    ${FFMPEG_CIRCULAR_BUFFER}/src/buffer/default_buffer.cpp
 )
 
 add_library(ffmpeg_circular_buffer STATIC ${FFMPEG_CIRCULAR_BUFFER_SRC})

@@ -1,8 +1,11 @@
 #ifndef VIDEO_PLAYER_H
 #define VIDEO_PLAYER_H
 
+#include "ffmpeg/file_fetcher.hpp"
 #include "ffmpeg/pause.hpp"
 #include "types/types.hpp"
+#include "buffer/buffer.hpp"
+#include "ffmpeg/js_fetcher.hpp"
 #include <deque>
 #include <string>
 #include <atomic>
@@ -15,15 +18,6 @@ enum VideoPlayerState {
     SETTING_PLAYED_DURATION
 };
 
-struct buffer_data {
-#ifndef __EMSCRIPTEN__
-    uint8_t *base; // Fixed pointer to the start of the file in memory
-    // preprocessor directive saves a whopping 1 byte
-#endif
-    size_t total_size; // Fixed total size of the file
-    size_t offset;     // Current reading position
-};
-
 class VideoPlayer {
     format_ptr fmt_ctx = make_format_ptr();
     decoder_ptr dec_ctx = make_decoder_ptr();
@@ -31,7 +25,13 @@ class VideoPlayer {
     avio_ptr avio_ctx = make_avio_ptr();
     int video_stream_index = -1;
     std::deque<frame_ptr> frames_queue;
-    struct buffer_data bd = {0};
+
+#ifdef __EMSCRIPTEN__
+    JSFetcher fetcher{};
+#else
+    FileFetcher fetcher{};
+#endif
+    Buffer *bd;
 
     // Keep last frame for pause / video end
     // so that video is never actually done

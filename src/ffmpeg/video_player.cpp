@@ -16,14 +16,19 @@ extern "C" {
 void fetchFrames(int offset, int length, uint8_t *);
 int getTotalSize();
 }
+#include "buffer/cfb.hpp"
+#else
+#include "buffer/cfb.hpp"
+#include "buffer/default_buffer.hpp"
 #endif
 
 using namespace std;
 
 VideoPlayer::~VideoPlayer() {
 #ifndef __EMSCRIPTEN__
-    av_file_unmap(bd.base, bd.total_size - bd.offset);
+    av_file_unmap(bd->base, bd->total_size - bd->offset);
 #endif
+    delete bd;
 }
 
 frame_ptr VideoPlayer::make_frame_ptr() {
@@ -62,27 +67,8 @@ bool VideoPlayer::is_loading() { return state == SETTING_PLAYED_DURATION; }
 // https://www.ffmpeg.org/doxygen/2.3/avio_reading_8c-example.html#_a10
 // https://www.ffmpeg.org/doxygen/2.3/aviobuf_8c_source.html#l00200
 
-static int read_packet(void *opaque, uint8_t *buf, int buf_size) {
-    struct buffer_data *bd = (struct buffer_data *)opaque;
-
-    int bytes_left = bd->total_size - bd->offset;
-    buf_size = FFMIN(buf_size, bytes_left);
-
-    if (buf_size <= 0) return -1; // End of file
-
-#ifdef __EMSCRIPTEN__
-    fetchFrames(bd->offset, buf_size, buf);
-#else
-    memcpy(buf, bd->base + bd->offset, buf_size);
-#endif
-
-    bd->offset += buf_size;
-
-    return buf_size;
-}
-
 static int64_t seek(void *opaque, int64_t offset, int whence) {
-    buffer_data *bd = (buffer_data *)opaque;
+    auto *bd = (Buffer *)opaque;
 
     if (whence == AVSEEK_SIZE) return bd->total_size;
 
@@ -114,8 +100,24 @@ int VideoPlayer::set_video(const string &filename)
     size_t avio_ctx_buffer_size = 2097152;
 
 #ifdef __EMSCRIPTEN__
-    bd.total_size = getTotalSize();
+    bd = new CyclicFragmentBuffer{&fetcher, 8388608};
+    // bd = new CyclicFragmentBuffer{&fetcher, 2097152};
 #else
+    // bd = new DefaultBuffer();
+    // uint8_t *buffer = NULL;
+    // size_t buffer_size;
+    //
+    // /* slurp file content into buffer */
+    // ret = av_file_map(filename.c_str(), &buffer, &buffer_size, 0, NULL);
+    // if (ret < 0) {
+    //     printf("Failed to open file!\n");
+    //     return -1;
+    // }
+    //
+    // /* fill opaque structure used by the AVIOContext read callback */
+    // bd->base = buffer;
+    // bd->total_size = buffer_size;
+
     uint8_t *buffer = NULL;
     size_t buffer_size;
 
@@ -126,9 +128,9 @@ int VideoPlayer::set_video(const string &filename)
         return -1;
     }
 
-    /* fill opaque structure used by the AVIOContext read callback */
-    bd.base = buffer;
-    bd.total_size = buffer_size;
+    fetcher.file = buffer;
+    fetcher.file_size = buffer_size;
+    bd = new CyclicFragmentBuffer{&fetcher, 8388608};
 #endif
 
     // already allocated in member variable
@@ -144,8 +146,8 @@ int VideoPlayer::set_video(const string &filename)
         avio_ctx_buffer,
         avio_ctx_buffer_size,
         0,
-        &bd,
-        &read_packet,
+        bd,
+        &Buffer::avio_read_packet,
         NULL,
         &seek
     );

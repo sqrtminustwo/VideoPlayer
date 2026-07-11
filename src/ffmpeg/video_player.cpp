@@ -96,28 +96,8 @@ int VideoPlayer::set_video(const string &filename)
 
     AVIOContext *avio_ctx = NULL;
     uint8_t *avio_ctx_buffer = NULL;
-    // 2 MiB
-    size_t avio_ctx_buffer_size = 2097152;
 
-#ifdef __EMSCRIPTEN__
-    bd = new CyclicFragmentBuffer{&fetcher, 8388608};
-    // bd = new CyclicFragmentBuffer{&fetcher, 2097152};
-#else
-    // bd = new DefaultBuffer();
-    // uint8_t *buffer = NULL;
-    // size_t buffer_size;
-    //
-    // /* slurp file content into buffer */
-    // ret = av_file_map(filename.c_str(), &buffer, &buffer_size, 0, NULL);
-    // if (ret < 0) {
-    //     printf("Failed to open file!\n");
-    //     return -1;
-    // }
-    //
-    // /* fill opaque structure used by the AVIOContext read callback */
-    // bd->base = buffer;
-    // bd->total_size = buffer_size;
-
+#ifndef __EMSCRIPTEN__
     uint8_t *buffer = NULL;
     size_t buffer_size;
 
@@ -128,9 +108,19 @@ int VideoPlayer::set_video(const string &filename)
         return -1;
     }
 
+#ifdef DEBUG
     fetcher.file = buffer;
     fetcher.file_size = buffer_size;
-    bd = new CyclicFragmentBuffer{&fetcher, 8388608};
+#endif
+#endif
+
+#if defined(DEBUG) || defined(__EMSCRIPTEN__)
+    bd = new CyclicFragmentBuffer{&fetcher, avio_ctx_buffer_size * 4};
+#else
+    bd = new DefaultBuffer();
+
+    bd->base = buffer;
+    bd->total_size = buffer_size;
 #endif
 
     // already allocated in member variable

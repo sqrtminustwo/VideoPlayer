@@ -26,6 +26,8 @@ class VideoPlayer {
     int video_stream_index = -1;
     std::deque<frame_ptr> frames_queue;
 
+    // 2 MiB
+    static constexpr int avio_ctx_buffer_size = 2097152;
 #ifdef __EMSCRIPTEN__
     JSFetcher fetcher{};
 #else

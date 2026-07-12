@@ -16,9 +16,11 @@ extern "C" {
 void fetchFrames(int offset, int length, uint8_t *);
 int getTotalSize();
 }
+#endif
+
+#if defined(DEBUG) || defined(__EMSCRIPTEN__)
 #include "buffer/cfb.hpp"
 #else
-#include "buffer/cfb.hpp"
 #include "buffer/default_buffer.hpp"
 #endif
 

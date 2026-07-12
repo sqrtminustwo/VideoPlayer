@@ -44,7 +44,7 @@ if(EMSCRIPTEN)
         "-sUSE_GLFW=3"
         "-sUSE_WEBGL2=1"
         "-sINITIAL_MEMORY=512MB"
-        "SHELL:--js-library ${CMAKE_CURRENT_SOURCE_DIR}/../web/capi.js"
+        "SHELL:--js-library ${CMAKE_CURRENT_SOURCE_DIR}/capi/capi.js"
         "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/shaders@shaders"
         "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts@assets/fonts"
     )

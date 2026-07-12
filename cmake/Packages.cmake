@@ -82,14 +82,6 @@ if(EMSCRIPTEN)
         SUFFIX ".js"
         RUNTIME_OUTPUT_DIRECTORY "${WEB_OUTPUT_DIR}"
     )
-    # The web folder is not related to videoplayer itself
-    add_custom_command(
-        TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${CMAKE_CURRENT_SOURCE_DIR}/../web"
-                "${WEB_OUTPUT_DIR}"
-    )
 else()
     find_package(OpenGL REQUIRED)
     find_package(glfw3 REQUIRED)

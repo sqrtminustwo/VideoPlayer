@@ -55,8 +55,13 @@ void KeyHandler::make_aimation_thread(State &state, animated_ptr component) {
 
 void sleep_millis(int millis) { this_thread::sleep_for(chrono::milliseconds(millis)); }
 
+StateModifier::StateModifier(std::atomic_bool &can_add_new) : can_add_new{can_add_new} {
+    this->can_add_new = false;
+}
+StateModifier::~StateModifier() { can_add_new = true; }
+
 void KeyHandler::animate(State *state, animated_ptr component) {
-    state->can_add_new = false;
+    StateModifier s{state->can_add_new};
     unsigned int sleep_time = 8;
     float degrade_speed = 0.02;
 
@@ -69,6 +74,4 @@ void KeyHandler::animate(State *state, animated_ptr component) {
         component->opacity -= degrade_speed;
         sleep_millis(sleep_time);
     }
-
-    state->can_add_new = true;
 }

@@ -22,6 +22,7 @@ Context::GLFW::GLFW() {
 #else
     main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor());
 #endif
+
     if (main_scale <= 0.0f) main_scale = 1.0f;
 
 #ifdef __EMSCRIPTEN__

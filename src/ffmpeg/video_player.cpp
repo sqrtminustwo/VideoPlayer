@@ -28,7 +28,18 @@ using namespace std;
 
 VideoPlayer::~VideoPlayer() {
 #ifndef __EMSCRIPTEN__
-    av_file_unmap(bd->base, bd->total_size - bd->offset);
+    uint8_t *base;
+    size_t total_size;
+
+#ifdef DEBUG
+    base = fetcher.file;
+    total_size = fetcher.file_size;
+#else
+    base = bd->get_base();
+    total_size = bd->get_total_size();
+#endif
+
+    av_file_unmap(base, total_size - bd->get_offset());
 #endif
     delete bd;
 }
@@ -72,19 +83,19 @@ bool VideoPlayer::is_loading() { return state == SETTING_PLAYED_DURATION; }
 static int64_t seek(void *opaque, int64_t offset, int whence) {
     auto *bd = (Buffer *)opaque;
 
-    if (whence == AVSEEK_SIZE) return bd->total_size;
+    if (whence == AVSEEK_SIZE) return bd->get_total_size();
 
     // can be ignored
     // https://www.ffmpeg.org/doxygen/2.3/avio_8h.html#afc6af68de5304c6cea23a785c1f94cd5
     whence &= ~AVSEEK_FORCE;
 
-    if (whence == SEEK_SET) bd->offset = offset;
-    else if (whence == SEEK_CUR) bd->offset += offset;
-    else if (whence == SEEK_END) bd->offset = bd->total_size + offset;
+    if (whence == SEEK_SET) bd->set_offset(offset);
+    else if (whence == SEEK_CUR) bd->set_offset(bd->get_offset() + offset);
+    else if (whence == SEEK_END) bd->set_offset(bd->get_total_size() + offset);
 
-    if (bd->offset > bd->total_size || bd->offset < 0) return -1;
+    if (bd->get_offset() > bd->get_total_size() || bd->get_offset() < 0) return -1;
 
-    return bd->offset;
+    return bd->get_offset();
 }
 
 #ifdef __EMSCRIPTEN__
@@ -121,8 +132,8 @@ int VideoPlayer::set_video(const string &filename)
 #else
     bd = new DefaultBuffer();
 
-    bd->base = buffer;
-    bd->total_size = buffer_size;
+    bd->set_base(buffer);
+    bd->set_total_size(buffer_size);
 #endif
 
     // already allocated in member variable

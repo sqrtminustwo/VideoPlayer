@@ -9,6 +9,12 @@ struct State {
     std::atomic_bool can_add_new = true;
 };
 
+struct StateModifier {
+    std::atomic_bool &can_add_new;
+    StateModifier(std::atomic_bool &);
+    ~StateModifier();
+};
+
 struct KeyHandler {
 
     KeyHandler(player_ptr, components_container &);

@@ -70,7 +70,7 @@ void Overlay::Controller::operator()() {
     auto [duration_width, duration_height] = ImGui::CalcTextSize(duration_str.c_str());
 
     float pauseButtonWidth = 50;
-    auto pauseButtonHeight = maxHeight * (1. / 2.);
+    float pauseButtonHeight = 50;
     maxWidth = maxWidth - pauseButtonWidth - duration_width - ImGui::GetStyle().FramePadding.x * 2 -
                ImGui::GetStyle().ItemSpacing.x * 2;
 

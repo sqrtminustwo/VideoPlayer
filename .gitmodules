@@ -4,3 +4,6 @@
 [submodule "external/ffmpeg-circular-buffer"]
 	path = external/ffmpeg-circular-buffer
 	url = https://github.com/sqrtminustwo/ffmpeg-circular-buffer
+[submodule "external/miniaudio"]
+	path = external/miniaudio
+	url = https://github.com/mackron/miniaudio

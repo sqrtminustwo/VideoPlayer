@@ -18,7 +18,8 @@ Context::GLFW::GLFW() {
     constexpr int logical_height = 720;
 
 #ifdef __EMSCRIPTEN__
-    main_scale = static_cast<float>(emscripten_get_device_pixel_ratio());
+    // main_scale = static_cast<float>(emscripten_get_device_pixel_ratio());
+    main_scale = 2.0f;
 #else
     main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor());
 #endif

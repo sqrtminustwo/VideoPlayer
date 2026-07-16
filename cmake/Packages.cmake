@@ -1,9 +1,11 @@
 # Packages
 
+set(EXTERNAL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external")
+
 # FFmpeg
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 if(EMSCRIPTEN)
-    set(FFMPEG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/ffmpeg-wasm-built")
+    set(FFMPEG_PATH "${CMAKE_CURRENT_SOURCE_DIRCMAKE_CURRENT_SOURCE_DIR}/external/ffmpeg-wasm-built")
     list(APPEND CMAKE_FIND_ROOT_PATH "${FFMPEG_PATH}")
 endif()
 find_package(FFmpeg REQUIRED COMPONENTS avdevice avfilter avformat avcodec swscale swresample avutil)
@@ -18,13 +20,12 @@ target_link_libraries(
 
 set(
     FFMPEG_CIRCULAR_BUFFER
-    "${CMAKE_CURRENT_SOURCE_DIR}/external/ffmpeg-circular-buffer"
+    "${EXTERNAL_DIR}/ffmpeg-circular-buffer"
 )
 
 set(
     FFMPEG_CIRCULAR_BUFFER_SRC
     ${FFMPEG_CIRCULAR_BUFFER}/src/buffer/cfb.cpp
-    ${FFMPEG_CIRCULAR_BUFFER}/src/buffer/fill_guard.cpp
     ${FFMPEG_CIRCULAR_BUFFER}/src/buffer/default_buffer.cpp
     ${FFMPEG_CIRCULAR_BUFFER}/src/buffer/buffer.cpp
 )
@@ -42,7 +43,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ffmpeg_circular_buffer)
 # https://github.com/ocornut/imgui/pull/1713
 # https://medium.com/@sigmoid90/work-with-vcpkg-on-ubuntu-b484363b1fed
 
-set(IMGUI_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/imgui")
+set(IMGUI_PATH "${EXTERNAL_DIR}/imgui")
 
 set(IMGUI_SRC
         ${IMGUI_PATH}/backends/imgui_impl_opengl3.h
@@ -72,7 +73,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC imgui)
 if(EMSCRIPTEN)
     set(WEB_OUTPUT_DIR "${CMAKE_BINARY_DIR}/web")
 
-    set(GLAD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/glad")
+    set(GLAD_PATH "${EXTERNAL_DIR}/glad")
     add_library(glad STATIC ${GLAD_PATH}/glad.c)
     set_target_properties(glad PROPERTIES
             INTERFACE_INCLUDE_DIRECTORIES "${GLAD_PATH}/include"
@@ -86,7 +87,7 @@ if(EMSCRIPTEN)
 else()
     find_package(OpenGL REQUIRED)
     find_package(glfw3 REQUIRED)
-    set(GLAD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/glad")
+    set(GLAD_PATH "${EXTERNAL_DIR}/glad")
     add_library(glad STATIC ${GLAD_PATH}/glad.c)
 
     set_target_properties(glad PROPERTIES
@@ -104,3 +105,16 @@ endif()
 # Fonts
 
 include_directories("external/fonts")
+
+# miniaudio
+
+set(MINIAUDIO "${EXTERNAL_DIR}/miniaudio")
+
+add_library(miniaudio STATIC
+    "${MINIAUDIO}/miniaudio.c"
+)
+target_include_directories(miniaudio PUBLIC ${MINIAUDIO})
+
+target_link_libraries(miniaudio PRIVATE m pthread dl)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC miniaudio)

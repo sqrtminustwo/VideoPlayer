@@ -10,6 +10,7 @@
 #include <string>
 #include <atomic>
 #include <mutex>
+#include <thread>
 
 enum VideoPlayerState {
     VIDEO_NOT_SET,
@@ -35,6 +36,9 @@ class VideoPlayer {
 #endif
     Buffer *bd;
 
+    std::thread duration_setting_thread;
+    void join_duration_setter();
+
     // Keep last frame for pause / video end
     // so that video is never actually done
     // until it is closed (or an error occured)
@@ -42,6 +46,7 @@ class VideoPlayer {
     std::atomic<VideoPlayerState> state{VIDEO_NOT_SET};
     double time_base = 0;
     time_point start_time;
+
     auto cast_to_start_time(::duration);
 
     frame_ptr make_frame_ptr();

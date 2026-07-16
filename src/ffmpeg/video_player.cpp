@@ -27,6 +27,7 @@ int getTotalSize();
 using namespace std;
 
 VideoPlayer::~VideoPlayer() {
+    join_duration_setter();
 #ifndef __EMSCRIPTEN__
     uint8_t *base;
     size_t total_size;
@@ -104,6 +105,8 @@ int VideoPlayer::set_video()
 int VideoPlayer::set_video(const string &filename)
 #endif
 {
+    if (is_loading()) join_duration_setter();
+
     const AVCodec *dec;
     int ret;
 
@@ -320,6 +323,10 @@ auto VideoPlayer::cast_to_start_time(::duration d) {
     return chrono::duration_cast<typename decltype(this->start_time)::duration>(d);
 }
 
+void VideoPlayer::join_duration_setter() {
+    if (duration_setting_thread.joinable()) duration_setting_thread.join();
+}
+
 void VideoPlayer::set_played_duration(const duration &duration) {
     // Duration below 0, exceeds video length -> don't do anything
     if (is_loading() || (duration < chrono::duration<float>(0)) || (duration > total_duration))
@@ -342,8 +349,9 @@ void VideoPlayer::set_played_duration(const duration &duration) {
      * skill issue
      */
 
+    join_duration_setter();
     state = SETTING_PLAYED_DURATION;
-    auto duration_setting_thread = thread([&, duration, started_setting]() {
+    duration_setting_thread = thread([&]() {
         double duration_count = chrono::duration<double>(duration).count();
         int64_t ts =
             av_rescale_q(duration_count, {1, 1}, fmt_ctx->streams[video_stream_index]->time_base);
@@ -369,5 +377,4 @@ void VideoPlayer::set_played_duration(const duration &duration) {
             start_time += cast_to_start_time(ended_setting - started_setting);
         }
     });
-    duration_setting_thread.detach();
 }

@@ -45,7 +45,10 @@ LastFrame &VideoPlayer::operator()() {
 
     if (pause.paused_now && last_frame.get()) return last_frame;
 
-    if (ffmpeg.frames_queue.empty() && !ffmpeg.load_more_frames()) {
+    LoadStatus status = ERROR;
+    while (ffmpeg.loading_cond(status)) status = ffmpeg.load_more_frames();
+
+    if (ffmpeg.frames_queue.empty() && status == NO_MORE_FRAMES) {
         // File ended
         played_duration = ffmpeg.total_duration;
         return last_frame;
@@ -120,13 +123,14 @@ void VideoPlayer::set_played_duration(const duration &duration) {
 
     join_duration_setter();
     state = SETTING_PLAYED_DURATION;
+
     duration_setting_thread = thread([this, duration, started_setting]() {
         double duration_count = chrono::duration<double>(duration).count();
         int64_t ts = av_rescale_q(duration_count, {1, 1}, ffmpeg.get_video_streams()->time_base);
 
         // initial
         if (ffmpeg.seek_ts(ts) < 0) return;
-        ffmpeg.load_more_frames();
+        while (ffmpeg.frames_queue.empty()) ffmpeg.load_more_frames();
 
         played_duration_mutex.lock();
         auto old_played_duration = played_duration;

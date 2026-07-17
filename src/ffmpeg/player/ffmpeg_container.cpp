@@ -181,13 +181,20 @@ int FFmpegContainer::set_video(const string &filename)
     return 0;
 }
 
-bool FFmpegContainer::load_more_frames() {
-    if (av_read_frame(fmt_ctx.get(), packet.get()) < 0) return false;
+LoadStatus FFmpegContainer::load_more_frames() {
+    if (av_read_frame(fmt_ctx.get(), packet.get()) < 0) return NO_MORE_FRAMES;
+
+    if (packet->stream_index != video_stream_index) {
+        av_packet_unref(packet.get());
+        return LOADED_AUDIO;
+    }
 
     int frames_queue_size = frames_queue.size();
+
     int ret;
 
-    while (frames_queue_size == frames_queue.size() && packet->stream_index == video_stream_index) {
+    while (frames_queue_size == frames_queue.size()) {
+        // while (frames_queue_size == frames_queue.size()) {
         ret = avcodec_send_packet(dec_ctx.get(), packet.get());
 
         /*
@@ -196,7 +203,7 @@ bool FFmpegContainer::load_more_frames() {
          */
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Error while sending a packet to the decoder\n");
-            return false;
+            return ERROR;
         }
 
         while (ret >= 0) {
@@ -213,15 +220,16 @@ bool FFmpegContainer::load_more_frames() {
             if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) break;
             else if (ret < 0) {
                 printf("Error while receiving a frame from the decoder\n");
-                return false;
+                return ERROR;
             }
+
             if (frame_ptr->width > 0 && frame_ptr->height > 0) frames_queue.push_back(frame_ptr);
         }
     }
 
     av_packet_unref(packet.get());
 
-    return true;
+    return LOADED_VIDEO;
 }
 
 double FFmpegContainer::front_frame_timestamp_in_seconds() {
@@ -231,9 +239,16 @@ double FFmpegContainer::front_frame_timestamp_in_seconds() {
 int FFmpegContainer::seek_ts(int64_t &ts) {
     return avformat_seek_file(fmt_ctx.get(), video_stream_index, 0, ts, ts, AVSEEK_FLAG_BACKWARD);
 }
+
+bool FFmpegContainer::loading_cond(const LoadStatus &status) const {
+    return status != NO_MORE_FRAMES && status != LOADED_VIDEO;
+}
+
 void FFmpegContainer::skip_frames() {
     frames_queue.clear();
-    load_more_frames();
+
+    LoadStatus state;
+    do { state = load_more_frames(); } while (loading_cond(state));
 }
 
 FFmpegContainer::~FFmpegContainer() {

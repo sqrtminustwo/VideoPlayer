@@ -8,6 +8,8 @@
 #include "ffmpeg/fetcher/js_fetcher.hpp"
 #include "types/types.hpp"
 
+enum LoadStatus { LOADED_AUDIO, LOADED_VIDEO, NO_MORE_FRAMES, ERROR };
+
 struct FFmpegContainer {
 #ifdef __EMSCRIPTEN__
     JSFetcher fetcher{};
@@ -36,7 +38,8 @@ struct FFmpegContainer {
     int set_video(const std::string &filename);
 #endif
 
-    bool load_more_frames();
+    bool loading_cond(const LoadStatus &status) const;
+    LoadStatus load_more_frames();
 
     double front_frame_timestamp_in_seconds();
 

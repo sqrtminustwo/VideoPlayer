@@ -15,8 +15,8 @@ Frame::Drawer::Drawer(
     context->shader_dependent_initialization(shader);
 };
 
-void Frame::Drawer::operator()(const frame_ptr &frame, const bool &paused) {
-    if (paused) return;
+void Frame::Drawer::operator()(LastFrame &frame) {
+    if (!frame.should_send_to_gpu) return;
 
     shader->use();
 
@@ -33,12 +33,14 @@ void Frame::Drawer::operator()(const frame_ptr &frame, const bool &paused) {
             GL_TEXTURE_2D,
             0,
             GL_R8,
-            conditional_on_channel(frame->width, channel),
-            conditional_on_channel(frame->height, channel),
+            conditional_on_channel(frame.get()->width, channel),
+            conditional_on_channel(frame.get()->height, channel),
             0,
             GL_RED,
             GL_UNSIGNED_BYTE,
-            frame->data[i]
+            frame.get()->data[i]
         );
     }
+
+    frame.should_send_to_gpu = false;
 }

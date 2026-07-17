@@ -12,6 +12,7 @@ class AVCodecContext;
 class AVPacket;
 class AVIOContext;
 class AVCodec;
+class AVStream;
 namespace Overlay {
 class Component;
 class Animated;

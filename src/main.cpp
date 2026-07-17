@@ -1,4 +1,4 @@
-#include "ffmpeg/video_player.hpp"
+#include "ffmpeg/player/video_player.hpp"
 #include "fonts/fonts.hpp"
 #include "opengl/drawers/overlay/components/animated/backward.hpp"
 #include "opengl/drawers/overlay/components/animated/forward.hpp"
@@ -41,8 +41,8 @@ int main(int argc, char **argv) {
     auto opengl_context = std::static_pointer_cast<Context::OpenGL>(myimgui_context);
     glfwSetWindowAspectRatio(
         opengl_context->window,
-        player->aspect_ratio.numer,
-        player->aspect_ratio.denom
+        player->get_aspect_ratio().numer,
+        player->get_aspect_ratio().denom
     );
 
     init_imgui_fonts(opengl_context->main_scale);
@@ -60,8 +60,6 @@ int main(int argc, char **argv) {
     DrawerYUV420 frame_drawer{opengl_context};
     Overlay::Drawer overlay_drawer{};
 
-    frame_ptr frame;
-
     KeyHandler keyhandler{player, components};
 
     glfwSetKeyCallback(opengl_context->window, keyhandler.make_key_callback(opengl_context));
@@ -72,14 +70,14 @@ int main(int argc, char **argv) {
     while (!glfwWindowShouldClose(myimgui_context->window))
 #endif
     {
-        frame = (*player)();
-        if (!frame) break;
+        auto &frame = (*player)();
+        if (!frame.get()) break;
 
         // WARNING: for now ther is no need to clear screen
         // new frame will just overvrite old frame + imgui overlay
         // and then new overlay will be drawn on top
 
-        frame_drawer(frame, player->pause.paused_now);
+        frame_drawer(frame);
         opengl_context->draw();
 
         overlay_drawer(&p_open, components);

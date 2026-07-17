@@ -1,5 +1,5 @@
 #ifdef __EMSCRIPTEN__
-#include "ffmpeg/js_fetcher.hpp"
+#include "ffmpeg/fetcher/js_fetcher.hpp"
 
 extern "C" {
 void fetchFrames(int offset, uint8_t *, int length);

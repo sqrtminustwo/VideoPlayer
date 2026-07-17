@@ -4,7 +4,7 @@
 #include "imgui_internal.h"
 #include "types/constants.hpp"
 #include "utils/utils.hpp"
-#include "ffmpeg/video_player.hpp" // IWYU pragma: keep
+#include "ffmpeg/player/video_player.hpp" // IWYU pragma: keep
 
 Overlay::Controller::Controller(player_ptr player) : player(player){};
 
@@ -65,7 +65,7 @@ void Overlay::Controller::operator()() {
     auto duration_str = std::format(
         "{} / {}",
         duration_to_string(player->played_duration),
-        player->total_duration_str
+        player->get_total_duration_str()
     );
     auto [duration_width, duration_height] = ImGui::CalcTextSize(duration_str.c_str());
 
@@ -86,7 +86,7 @@ void Overlay::Controller::operator()() {
     ImGui::SameLine();
     const ImU32 fg_col = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
     const ImU32 bg_col = ImGui::GetColorU32(ImGuiCol_Button);
-    const float value = player->played_duration.count() / player->total_duration.count();
+    const float value = player->played_duration.count() / player->get_total_duration().count();
     ImVec2 size = ImVec2(maxWidth, 6);
     size.x -= ImGui::GetStyle().FramePadding.x * 2;
 
@@ -97,7 +97,7 @@ void Overlay::Controller::operator()() {
 
     float clicked_duration_ratio = 0.0f;
     if (ImGui::IsMouseClicked(0) && mouseInBound(bb.Min, bb.Max, &clicked_duration_ratio)) {
-        auto clicked_duration = player->total_duration * clicked_duration_ratio;
+        auto clicked_duration = player->get_total_duration() * clicked_duration_ratio;
         player->set_played_duration(clicked_duration);
     }
 

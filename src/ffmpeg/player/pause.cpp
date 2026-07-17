@@ -1,4 +1,4 @@
-#include "ffmpeg/pause.hpp"
+#include "ffmpeg/player/pause.hpp"
 #include "utils/utils.hpp"
 
 void Pause::toggle() {

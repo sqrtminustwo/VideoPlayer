@@ -1,6 +1,6 @@
 #include "opengl/drawers/overlay/components/animated/pause.hpp"
 #include "IconsFontAwesome4.h"
-#include "ffmpeg/video_player.hpp" // IWYU pragma: keep
+#include "ffmpeg/player/video_player.hpp" // IWYU pragma: keep
 
 Overlay::Pause::Pause(player_ptr player) : player{player}, Animated{"Pause"} {}
 

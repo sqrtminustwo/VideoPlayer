@@ -1,6 +1,6 @@
 #include "opengl/drawers/overlay/components/animated/backward.hpp"
 #include "IconsFontAwesome4.h"
-#include "ffmpeg/video_player.hpp" // IWYU pragma: keep
+#include "ffmpeg/player/video_player.hpp" // IWYU pragma: keep
 
 Overlay::Backward::Backward() : Animated{"Backward"} { x_pos_fraction = 1. / 4.; }
 

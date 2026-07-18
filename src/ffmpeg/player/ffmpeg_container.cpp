@@ -1,5 +1,6 @@
 #include "ffmpeg/player/ffmpeg_container.hpp"
 #include "utils/utils.hpp"
+#include "ffmpeg/player/stream_meta.hpp"
 
 #if defined(DEBUG) || defined(__EMSCRIPTEN__)
 #include "buffer/cfb.hpp"
@@ -33,15 +34,6 @@ avio_ptr FFmpegContainer::make_avio_ptr() {
     });
 }
 
-decoder_ptr FFmpegContainer::make_decoder_ptr(const AVCodec *dec) {
-    // Initial initialization
-    if (dec == NULL) return decoder_ptr(nullptr, [](AVCodecContext *) {});
-
-    return decoder_ptr(avcodec_alloc_context3(dec), [](AVCodecContext *f) {
-        avcodec_free_context(&f);
-    });
-}
-
 packet_ptr FFmpegContainer::make_packet_ptr() {
     return packet_ptr(av_packet_alloc(), [](AVPacket *f) { av_packet_free(&f); });
 }
@@ -64,10 +56,12 @@ static int64_t seek(void *opaque, int64_t offset, int whence) {
     return bd->get_offset();
 }
 
-AVStream *FFmpegContainer::get_video_streams() const {
-    if (!fmt_ctx) return nullptr;
-    return fmt_ctx->streams[video_stream_index];
+AVStream *FFmpegContainer::get_stream(int index) const {
+    if (!fmt_ctx || index < 0) return nullptr;
+    return fmt_ctx->streams[index];
 }
+AVStream *FFmpegContainer::get_video_stream() const { return get_stream(video->stream_index); }
+AVStream *FFmpegContainer::get_audio_stream() const { return get_stream(audio->stream_index); }
 
 // https://www.ffmpeg.org/doxygen/2.3/avio_reading_8c-example.html#_a10
 // https://www.ffmpeg.org/doxygen/2.3/aviobuf_8c_source.html#l00200
@@ -105,8 +99,6 @@ int FFmpegContainer::set_video(const string &filename)
     bd->set_base(buffer);
     bd->set_total_size(buffer_size);
 #endif
-
-    const AVCodec *dec;
 
     AVIOContext *avio_ctx = NULL;
     uint8_t *avio_ctx_buffer = NULL;
@@ -146,35 +138,15 @@ int FFmpegContainer::set_video(const string &filename)
         return ret;
     }
 
-    /* select the video stream */
-    if ((ret = av_find_best_stream(format_ptr, AVMEDIA_TYPE_VIDEO, -1, -1, &dec, 0)) < 0) {
-        printf("Cannot find a video stream in the input file\n");
-        return ret;
-    }
-    video_stream_index = ret;
+    video = make_unique<StreamMeta>(fmt_ctx);
+    audio = make_unique<StreamMeta>(fmt_ctx);
 
-    /* create decoding context */
-    dec_ctx = make_decoder_ptr(dec);
-    if (!dec_ctx) {
-        printf("Failed to create decoder");
-        return AVERROR(ENOMEM);
-    }
+    bool required;
+    video->init_stream(AVMEDIA_TYPE_VIDEO, required = true);
+    audio->init_stream(AVMEDIA_TYPE_AUDIO, required = false);
 
-    auto dec_ptr = dec_ctx.get();
-
-    avcodec_parameters_to_context(dec_ptr, get_video_streams()->codecpar);
-    time_base = av_q2d(get_video_streams()->time_base);
-
-    /* init the video decoder */
-    if ((ret = avcodec_open2(dec_ptr, dec, NULL)) < 0) {
-        printf("Cannot open video decoder\n");
-        return ret;
-    }
-
-    aspect_ratio = AspectRatio(dec_ptr->width, dec_ptr->height);
-
-    // state = VIDEO_SET_NOT_PLAYED;
-
+    time_base = av_q2d(get_video_stream()->time_base);
+    aspect_ratio = AspectRatio(video->dec_ctx->width, video->dec_ctx->height);
     total_duration = chrono::duration<float>(fmt_ctx->duration / AV_TIME_BASE);
     total_duration_str = duration_to_string(total_duration);
 
@@ -184,18 +156,18 @@ int FFmpegContainer::set_video(const string &filename)
 LoadStatus FFmpegContainer::load_more_frames() {
     if (av_read_frame(fmt_ctx.get(), packet.get()) < 0) return NO_MORE_FRAMES;
 
-    if (packet->stream_index != video_stream_index) {
+    if (packet->stream_index != video->stream_index) {
         av_packet_unref(packet.get());
         return LOADED_AUDIO;
     }
 
-    int frames_queue_size = frames_queue.size();
-
     int ret;
+    int frames_queue_size = frames_queue.size();
+    auto dec_ctx_ptr = video->dec_ctx.get();
 
     while (frames_queue_size == frames_queue.size()) {
         // while (frames_queue_size == frames_queue.size()) {
-        ret = avcodec_send_packet(dec_ctx.get(), packet.get());
+        ret = avcodec_send_packet(dec_ctx_ptr, packet.get());
 
         /*
          * Normally beacuse of this
@@ -215,7 +187,7 @@ LoadStatus FFmpegContainer::load_more_frames() {
              * be just skipped
              */
             auto frame_ptr = make_frame_ptr();
-            ret = avcodec_receive_frame(dec_ctx.get(), frame_ptr.get());
+            ret = avcodec_receive_frame(dec_ctx_ptr, frame_ptr.get());
 
             if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) break;
             else if (ret < 0) {
@@ -237,7 +209,7 @@ double FFmpegContainer::front_frame_timestamp_in_seconds() {
 }
 
 int FFmpegContainer::seek_ts(int64_t &ts) {
-    return avformat_seek_file(fmt_ctx.get(), video_stream_index, 0, ts, ts, AVSEEK_FLAG_BACKWARD);
+    return avformat_seek_file(fmt_ctx.get(), video->stream_index, 0, ts, ts, AVSEEK_FLAG_BACKWARD);
 }
 
 bool FFmpegContainer::loading_cond(const LoadStatus &status) const {

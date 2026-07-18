@@ -126,7 +126,7 @@ void VideoPlayer::set_played_duration(const duration &duration) {
 
     duration_setting_thread = thread([this, duration, started_setting]() {
         double duration_count = chrono::duration<double>(duration).count();
-        int64_t ts = av_rescale_q(duration_count, {1, 1}, ffmpeg.get_video_streams()->time_base);
+        int64_t ts = av_rescale_q(duration_count, {1, 1}, ffmpeg.get_video_stream()->time_base);
 
         // initial
         if (ffmpeg.seek_ts(ts) < 0) return;

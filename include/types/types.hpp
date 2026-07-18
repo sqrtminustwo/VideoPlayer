@@ -22,13 +22,15 @@ namespace Context {
 class OpenGL;
 }
 class VideoPlayer;
+class StreamMeta;
 
 using textures_t = std::array<unsigned int *, 3>;
 
 using opengl_context = std::shared_ptr<Context::OpenGL>;
 using player_ptr = std::shared_ptr<VideoPlayer>;
 using frame_ptr = std::shared_ptr<AVFrame>;
-using format_ptr = std::unique_ptr<AVFormatContext, void (*)(AVFormatContext *)>;
+using stream_meta_ptr = std::unique_ptr<StreamMeta>;
+using format_ptr = std::shared_ptr<AVFormatContext>;
 using decoder_ptr = std::unique_ptr<AVCodecContext, void (*)(AVCodecContext *)>;
 using packet_ptr = std::unique_ptr<AVPacket, void (*)(AVPacket *)>;
 using avio_ptr = std::unique_ptr<AVIOContext, void (*)(AVIOContext *)>;

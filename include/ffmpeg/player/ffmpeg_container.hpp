@@ -7,6 +7,7 @@
 #include "ffmpeg/fetcher/file_fetcher.hpp"
 #include "ffmpeg/fetcher/js_fetcher.hpp"
 #include "types/types.hpp"
+#include "ffmpeg/player/stream_meta.hpp" // IWYU pragma: keep
 
 enum LoadStatus { LOADED_AUDIO, LOADED_VIDEO, NO_MORE_FRAMES, ERROR };
 
@@ -19,12 +20,19 @@ struct FFmpegContainer {
     Buffer *bd;
     static constexpr int avio_ctx_buffer_size = 2097152;
 
-    AVStream *get_video_streams() const;
+    AVStream *get_video_stream() const;
+    AVStream *get_audio_stream() const;
+
     format_ptr fmt_ctx = make_format_ptr();
-    decoder_ptr dec_ctx = make_decoder_ptr();
     packet_ptr packet = make_packet_ptr();
     avio_ptr avio_ctx = make_avio_ptr();
-    int video_stream_index = -1;
+
+    stream_meta_ptr video;
+    stream_meta_ptr audio;
+    // decoder_ptr video_dec_ctx = make_decoder_ptr();
+    // int video_stream_index = -1;
+    // decoder_ptr audio_dec_ctx = make_decoder_ptr();
+    // int audio_stream_index = -1;
 
     AspectRatio aspect_ratio{16, 9};
     std::string total_duration_str;
@@ -49,11 +57,12 @@ struct FFmpegContainer {
     ~FFmpegContainer();
 
   private:
+    AVStream *get_stream(int index) const;
+
     double time_base = 0;
 
     frame_ptr make_frame_ptr();
     format_ptr make_format_ptr();
-    decoder_ptr make_decoder_ptr(const AVCodec * = NULL);
     packet_ptr make_packet_ptr();
     avio_ptr make_avio_ptr();
 };

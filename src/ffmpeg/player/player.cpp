@@ -1,22 +1,25 @@
 #include "ffmpeg/player/player.hpp"
+#include "types/constants.hpp"
 #include "utils/utils.hpp"
 
 extern "C" {
 #include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
 }
 
 using namespace std;
+using namespace chrono_literals;
 
 AspectRatio Player::get_aspect_ratio() const { return ffmpeg.aspect_ratio; }
 duration Player::get_total_duration() const { return ffmpeg.total_duration; }
-std::string Player::get_total_duration_str() const { return ffmpeg.total_duration_str; }
+string Player::get_total_duration_str() const { return ffmpeg.total_duration_str; }
 
 bool Player::is_loading() { return state == SETTING_PLAYED_DURATION; }
 
 #ifdef __EMSCRIPTEN__
 int Player::set_video()
 #else
-int Player::set_video(const std::string &filename)
+int Player::set_video(const string &filename)
 #endif
 {
     join_duration_setter();
@@ -43,9 +46,12 @@ LastFrame &Player::operator()() {
         return last_frame;
     }
 
-    if (pause.paused_now && last_frame.get()) return last_frame;
+    auto paused = pause.paused_now;
+    auto done = ffmpeg.total_duration - played_duration <= 50ms;
 
-    LoadStatus status = ERROR;
+    if ((paused || done) && last_frame.get()) return last_frame;
+
+    INITIAL_LOAD_STATUS;
     while (ffmpeg.loading_cond(status)) status = ffmpeg.load_more_frames();
 
     if (ffmpeg.video->frames_queue.empty() && status == NO_MORE_FRAMES) {
@@ -81,11 +87,14 @@ LastFrame &Player::operator()() {
 }
 
 void Player::skip_seconds_forward(bool forward) {
-    auto duration = chrono::seconds(skip_seconds);
+    auto skip_duration = chrono::seconds(skip_seconds);
 
-    played_duration_mutex.lock();
-    auto new_duration = forward ? played_duration + duration : played_duration - duration;
-    played_duration_mutex.unlock();
+    duration new_duration;
+    {
+        lock_guard<mutex> guard{played_duration_mutex};
+        new_duration = forward ? min(played_duration + skip_duration, ffmpeg.total_duration)
+                               : max(played_duration - skip_duration, ZERO_TS);
+    }
 
     set_played_duration(new_duration);
 }
@@ -98,20 +107,20 @@ void Player::join_duration_setter() {
     if (duration_setting_thread.joinable()) duration_setting_thread.join();
 }
 
-void Player::set_played_duration(const duration &duration) {
-    // Duration below 0, exceeds video length -> don't do anything
-    if (is_loading() || (duration < chrono::duration<float>(0)) ||
-        (duration > ffmpeg.total_duration))
+void Player::set_played_duration(const duration &new_played_duration) {
+    // Already loading, duration below 0, exceeds video length -> don't do anything
+    if (is_loading() || (new_played_duration < ZERO_TS) ||
+        (new_played_duration > ffmpeg.total_duration))
         return;
 
     const auto started_setting = now_f();
 
     // old frames are now invalid
     ffmpeg.video->frames_queue.clear();
-    if (duration > played_duration)
-        this->start_time -= cast_to_start_time(duration - played_duration);
-    else if (duration < played_duration)
-        this->start_time += cast_to_start_time(played_duration - duration);
+    if (new_played_duration > played_duration)
+        this->start_time -= cast_to_start_time(new_played_duration - played_duration);
+    else if (new_played_duration < played_duration)
+        this->start_time += cast_to_start_time(played_duration - new_played_duration);
 
     /*
      * There seem to be no problem with seeking forward in time
@@ -124,29 +133,41 @@ void Player::set_played_duration(const duration &duration) {
     join_duration_setter();
     state = SETTING_PLAYED_DURATION;
 
-    duration_setting_thread = thread([this, duration, started_setting]() {
-        double duration_count = chrono::duration<double>(duration).count();
-        int64_t ts = av_rescale_q(duration_count, {1, 1}, ffmpeg.video->get_stream()->time_base);
+    duration_setting_thread = thread([this, new_played_duration, started_setting]() {
+        double duration_count = chrono::duration<double>(new_played_duration).count();
 
-        // initial
-        if (ffmpeg.seek_ts(ts) < 0) return;
-        while (ffmpeg.video->frames_queue.empty()) ffmpeg.load_more_frames();
+        // Seek to keyframe <= the duration
+        auto seeked = duration_count;
+        double decriment = 1.;
+        auto stop = 1e-5;
 
-        played_duration_mutex.lock();
-        auto old_played_duration = played_duration;
-        played_duration = duration;
-        played_duration_mutex.unlock();
+        while (true) {
+            if (ffmpeg.video->seek_ts(seeked) < 0) return;
+            if (ffmpeg.video->frames_queue.empty()) ffmpeg.load_more_frames();
 
-        if (duration < old_played_duration)
-            while (ffmpeg.front_frame_timestamp_in_seconds() > duration_count) ffmpeg.skip_frames();
+            if (ffmpeg.front_frame_timestamp_in_seconds() <= duration_count) break;
 
-        // skip to real seeked time
-        while (ffmpeg.front_frame_timestamp_in_seconds() < duration_count) ffmpeg.skip_frames();
+            if (seeked > -stop && seeked < stop) break;
+
+            seeked = max(0., seeked - decriment);
+        }
+
+        // Seek forward to exact frame
+        duration old_played_duration;
+        {
+            lock_guard<mutex> guard{played_duration_mutex};
+            old_played_duration = played_duration;
+            played_duration = new_played_duration;
+        }
+
+        auto status = LOADED_VIDEO;
+        while (status == LOADED_VIDEO && ffmpeg.front_frame_timestamp_in_seconds() < duration_count)
+            status = ffmpeg.skip_frames();
 
         if (is_loading()) {
-            state = VIDEO_PLAYING;
             const auto ended_setting = now_f();
             start_time += cast_to_start_time(ended_setting - started_setting);
+            state = VIDEO_PLAYING;
         }
     });
 }

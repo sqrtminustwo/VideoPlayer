@@ -26,6 +26,8 @@ struct Stream {
 
     std::deque<frame_ptr> frames_queue;
 
+    int seek_ts(const double &);
+
   private:
     format_ptr fmt_ctx;
 

@@ -7,7 +7,8 @@
 #include "types/types.hpp"
 #include "ffmpeg/player/stream/stream.hpp" // IWYU pragma: keep
 
-enum LoadStatus { LOADED_AUDIO, LOADED_VIDEO, NO_MORE_FRAMES, ERROR };
+enum LoadStatus { LOADED_AUDIO = 0, LOADED_VIDEO, NO_MORE_FRAMES, ERROR, INIT };
+#define INITIAL_LOAD_STATUS auto status = INIT;
 
 struct PacketGuard {
     packet_ptr &packet;
@@ -48,8 +49,7 @@ struct FFmpeg {
 
     double front_frame_timestamp_in_seconds();
 
-    int seek_ts(int64_t &);
-    void skip_frames();
+    LoadStatus skip_frames();
 
     ~FFmpeg();
 

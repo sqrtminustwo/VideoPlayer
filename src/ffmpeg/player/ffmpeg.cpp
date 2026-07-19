@@ -162,7 +162,7 @@ LoadStatus FFmpeg::load_more_frames() {
     // WARNING: temporary, audio not implemented yet
     // if (packet->stream_index != video->stream_index) return LOADED_AUDIO;
 
-    LoadStatus status = ERROR;
+    INITIAL_LOAD_STATUS;
     stream_ptr stream = nullptr;
 
     if (packet->stream_index == video->stream_index) status = LOADED_VIDEO, stream = video;
@@ -213,19 +213,16 @@ double FFmpeg::front_frame_timestamp_in_seconds() {
     return ((double)video->frames_queue.front()->pts) * time_base;
 }
 
-int FFmpeg::seek_ts(int64_t &ts) {
-    return avformat_seek_file(fmt_ctx.get(), video->stream_index, 0, ts, ts, AVSEEK_FLAG_BACKWARD);
-}
-
 bool FFmpeg::loading_cond(const LoadStatus &status) const {
-    return status != NO_MORE_FRAMES && status != LOADED_VIDEO;
+    return status != NO_MORE_FRAMES && status != LOADED_VIDEO && status != ERROR;
 }
 
-void FFmpeg::skip_frames() {
+LoadStatus FFmpeg::skip_frames() {
     video->frames_queue.clear();
-
     LoadStatus state;
     do { state = load_more_frames(); } while (loading_cond(state));
+
+    return state;
 }
 
 FFmpeg::~FFmpeg() {

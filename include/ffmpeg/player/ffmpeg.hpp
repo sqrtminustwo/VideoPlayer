@@ -1,17 +1,23 @@
 #ifndef FFMPEG_META_H
 #define FFMPEG_META_H
 
-#include <deque>
-
 #include "buffer/buffer.hpp"
 #include "ffmpeg/fetcher/file_fetcher.hpp"
 #include "ffmpeg/fetcher/js_fetcher.hpp"
 #include "types/types.hpp"
-#include "ffmpeg/player/stream_meta.hpp" // IWYU pragma: keep
+#include "ffmpeg/player/stream/stream.hpp" // IWYU pragma: keep
 
 enum LoadStatus { LOADED_AUDIO, LOADED_VIDEO, NO_MORE_FRAMES, ERROR };
 
-struct FFmpegContainer {
+struct PacketGuard {
+    packet_ptr &packet;
+
+    PacketGuard() = delete;
+    PacketGuard(packet_ptr &packet);
+    ~PacketGuard();
+};
+
+struct FFmpeg {
 #ifdef __EMSCRIPTEN__
     JSFetcher fetcher{};
 #else
@@ -20,25 +26,16 @@ struct FFmpegContainer {
     Buffer *bd;
     static constexpr int avio_ctx_buffer_size = 2097152;
 
-    AVStream *get_video_stream() const;
-    AVStream *get_audio_stream() const;
-
     format_ptr fmt_ctx = make_format_ptr();
     packet_ptr packet = make_packet_ptr();
     avio_ptr avio_ctx = make_avio_ptr();
 
-    stream_meta_ptr video;
-    stream_meta_ptr audio;
-    // decoder_ptr video_dec_ctx = make_decoder_ptr();
-    // int video_stream_index = -1;
-    // decoder_ptr audio_dec_ctx = make_decoder_ptr();
-    // int audio_stream_index = -1;
+    stream_ptr video;
+    stream_ptr audio;
 
     AspectRatio aspect_ratio{16, 9};
     std::string total_duration_str;
     duration total_duration;
-
-    std::deque<frame_ptr> frames_queue;
 
 #ifdef __EMSCRIPTEN__
     int set_video();
@@ -54,14 +51,11 @@ struct FFmpegContainer {
     int seek_ts(int64_t &);
     void skip_frames();
 
-    ~FFmpegContainer();
+    ~FFmpeg();
 
   private:
-    AVStream *get_stream(int index) const;
-
     double time_base = 0;
 
-    frame_ptr make_frame_ptr();
     format_ptr make_format_ptr();
     packet_ptr make_packet_ptr();
     avio_ptr make_avio_ptr();

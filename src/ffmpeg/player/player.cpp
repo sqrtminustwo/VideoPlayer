@@ -1,4 +1,4 @@
-#include "ffmpeg/player/video_player.hpp"
+#include "ffmpeg/player/player.hpp"
 #include "utils/utils.hpp"
 
 extern "C" {
@@ -7,16 +7,16 @@ extern "C" {
 
 using namespace std;
 
-AspectRatio VideoPlayer::get_aspect_ratio() const { return ffmpeg.aspect_ratio; }
-duration VideoPlayer::get_total_duration() const { return ffmpeg.total_duration; }
-std::string VideoPlayer::get_total_duration_str() const { return ffmpeg.total_duration_str; }
+AspectRatio Player::get_aspect_ratio() const { return ffmpeg.aspect_ratio; }
+duration Player::get_total_duration() const { return ffmpeg.total_duration; }
+std::string Player::get_total_duration_str() const { return ffmpeg.total_duration_str; }
 
-bool VideoPlayer::is_loading() { return state == SETTING_PLAYED_DURATION; }
+bool Player::is_loading() { return state == SETTING_PLAYED_DURATION; }
 
 #ifdef __EMSCRIPTEN__
-int VideoPlayer::set_video()
+int Player::set_video()
 #else
-int VideoPlayer::set_video(const std::string &filename)
+int Player::set_video(const std::string &filename)
 #endif
 {
     join_duration_setter();
@@ -33,7 +33,7 @@ int VideoPlayer::set_video(const std::string &filename)
     return ret;
 }
 
-LastFrame &VideoPlayer::operator()() {
+LastFrame &Player::operator()() {
     // no locks / mutexes needed below as state is atomic
     // and no action will be done until skipping thread is working
     if (is_loading()) return last_frame;
@@ -48,7 +48,7 @@ LastFrame &VideoPlayer::operator()() {
     LoadStatus status = ERROR;
     while (ffmpeg.loading_cond(status)) status = ffmpeg.load_more_frames();
 
-    if (ffmpeg.frames_queue.empty() && status == NO_MORE_FRAMES) {
+    if (ffmpeg.video->frames_queue.empty() && status == NO_MORE_FRAMES) {
         // File ended
         played_duration = ffmpeg.total_duration;
         return last_frame;
@@ -68,19 +68,19 @@ LastFrame &VideoPlayer::operator()() {
 
     played_duration = duration_diff(now, start_time);
 
-    if (!ffmpeg.frames_queue.empty()) {
+    if (!ffmpeg.video->frames_queue.empty()) {
         auto current = ffmpeg.front_frame_timestamp_in_seconds();
         auto expected = played_duration.count();
         if (current <= expected) {
-            this->last_frame.set(ffmpeg.frames_queue.front());
-            ffmpeg.frames_queue.pop_front();
+            this->last_frame.set(ffmpeg.video->frames_queue.front());
+            ffmpeg.video->frames_queue.pop_front();
         }
     }
 
     return last_frame;
 }
 
-void VideoPlayer::skip_seconds_forward(bool forward) {
+void Player::skip_seconds_forward(bool forward) {
     auto duration = chrono::seconds(skip_seconds);
 
     played_duration_mutex.lock();
@@ -90,15 +90,15 @@ void VideoPlayer::skip_seconds_forward(bool forward) {
     set_played_duration(new_duration);
 }
 
-auto VideoPlayer::cast_to_start_time(::duration d) {
+auto Player::cast_to_start_time(::duration d) {
     return chrono::duration_cast<typename decltype(this->start_time)::duration>(d);
 }
 
-void VideoPlayer::join_duration_setter() {
+void Player::join_duration_setter() {
     if (duration_setting_thread.joinable()) duration_setting_thread.join();
 }
 
-void VideoPlayer::set_played_duration(const duration &duration) {
+void Player::set_played_duration(const duration &duration) {
     // Duration below 0, exceeds video length -> don't do anything
     if (is_loading() || (duration < chrono::duration<float>(0)) ||
         (duration > ffmpeg.total_duration))
@@ -107,7 +107,7 @@ void VideoPlayer::set_played_duration(const duration &duration) {
     const auto started_setting = now_f();
 
     // old frames are now invalid
-    ffmpeg.frames_queue.clear();
+    ffmpeg.video->frames_queue.clear();
     if (duration > played_duration)
         this->start_time -= cast_to_start_time(duration - played_duration);
     else if (duration < played_duration)
@@ -126,11 +126,11 @@ void VideoPlayer::set_played_duration(const duration &duration) {
 
     duration_setting_thread = thread([this, duration, started_setting]() {
         double duration_count = chrono::duration<double>(duration).count();
-        int64_t ts = av_rescale_q(duration_count, {1, 1}, ffmpeg.get_video_stream()->time_base);
+        int64_t ts = av_rescale_q(duration_count, {1, 1}, ffmpeg.video->get_stream()->time_base);
 
         // initial
         if (ffmpeg.seek_ts(ts) < 0) return;
-        while (ffmpeg.frames_queue.empty()) ffmpeg.load_more_frames();
+        while (ffmpeg.video->frames_queue.empty()) ffmpeg.load_more_frames();
 
         played_duration_mutex.lock();
         auto old_played_duration = played_duration;
@@ -151,4 +151,4 @@ void VideoPlayer::set_played_duration(const duration &duration) {
     });
 }
 
-VideoPlayer::~VideoPlayer() { join_duration_setter(); }
+Player::~Player() { join_duration_setter(); }

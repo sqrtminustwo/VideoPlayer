@@ -1,4 +1,4 @@
-#include "ffmpeg/player/video_player.hpp"
+#include "ffmpeg/player/player.hpp"
 #include "fonts/fonts.hpp"
 #include "opengl/drawers/overlay/components/animated/backward.hpp"
 #include "opengl/drawers/overlay/components/animated/forward.hpp"
@@ -18,7 +18,7 @@
 #endif
 
 int main(int argc, char **argv) {
-    auto player = std::make_shared<VideoPlayer>();
+    auto player = std::make_shared<Player>();
 
 #ifdef __EMSCRIPTEN__
     auto ret = player->set_video();

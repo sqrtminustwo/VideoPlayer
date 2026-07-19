@@ -1,6 +1,10 @@
-#include "ffmpeg/player/ffmpeg_container.hpp"
+#include "ffmpeg/player/ffmpeg.hpp"
+#include "ffmpeg/player/stream/audio.hpp"
+#include "ffmpeg/player/stream/video.hpp"
 #include "utils/utils.hpp"
-#include "ffmpeg/player/stream_meta.hpp"
+
+#define MINIAUDIO_IMPLEMENTATION
+#include "miniaudio.h"
 
 #if defined(DEBUG) || defined(__EMSCRIPTEN__)
 #include "buffer/cfb.hpp"
@@ -16,17 +20,13 @@ extern "C" {
 
 using namespace std;
 
-frame_ptr FFmpegContainer::make_frame_ptr() {
-    return frame_ptr(av_frame_alloc(), [](AVFrame *f) { av_frame_free(&f); });
-}
-
-format_ptr FFmpegContainer::make_format_ptr() {
+format_ptr FFmpeg::make_format_ptr() {
     return format_ptr(avformat_alloc_context(), [](AVFormatContext *f) {
         avformat_close_input(&f);
     });
 }
 
-avio_ptr FFmpegContainer::make_avio_ptr() {
+avio_ptr FFmpeg::make_avio_ptr() {
     return avio_ptr(nullptr, [](AVIOContext *avio_ctx) {
         if (!avio_ctx) return;
         av_freep(&avio_ctx->buffer);
@@ -34,7 +34,7 @@ avio_ptr FFmpegContainer::make_avio_ptr() {
     });
 }
 
-packet_ptr FFmpegContainer::make_packet_ptr() {
+packet_ptr FFmpeg::make_packet_ptr() {
     return packet_ptr(av_packet_alloc(), [](AVPacket *f) { av_packet_free(&f); });
 }
 
@@ -56,20 +56,13 @@ static int64_t seek(void *opaque, int64_t offset, int whence) {
     return bd->get_offset();
 }
 
-AVStream *FFmpegContainer::get_stream(int index) const {
-    if (!fmt_ctx || index < 0) return nullptr;
-    return fmt_ctx->streams[index];
-}
-AVStream *FFmpegContainer::get_video_stream() const { return get_stream(video->stream_index); }
-AVStream *FFmpegContainer::get_audio_stream() const { return get_stream(audio->stream_index); }
-
 // https://www.ffmpeg.org/doxygen/2.3/avio_reading_8c-example.html#_a10
 // https://www.ffmpeg.org/doxygen/2.3/aviobuf_8c_source.html#l00200
 
 #ifdef __EMSCRIPTEN__
-int FFmpegContainer::set_video()
+int FFmpeg::set_video()
 #else
-int FFmpegContainer::set_video(const string &filename)
+int FFmpeg::set_video(const string &filename)
 #endif
 {
     int ret;
@@ -138,35 +131,52 @@ int FFmpegContainer::set_video(const string &filename)
         return ret;
     }
 
-    video = make_unique<StreamMeta>(fmt_ctx);
-    audio = make_unique<StreamMeta>(fmt_ctx);
+    video = make_unique<Video>(fmt_ctx);
+    audio = make_unique<Audio>(fmt_ctx);
 
     bool required;
     video->init_stream(AVMEDIA_TYPE_VIDEO, required = true);
     audio->init_stream(AVMEDIA_TYPE_AUDIO, required = false);
 
-    time_base = av_q2d(get_video_stream()->time_base);
+    time_base = av_q2d(video->get_stream()->time_base);
     aspect_ratio = AspectRatio(video->dec_ctx->width, video->dec_ctx->height);
     total_duration = chrono::duration<float>(fmt_ctx->duration / AV_TIME_BASE);
     total_duration_str = duration_to_string(total_duration);
 
+    // auto t = audio->dec_ctx.get();
+    // printf("%s %d\n", t->codec->name, t->ch_layout.nb_channels);
+    // exit(0);
+
     return 0;
 }
 
-LoadStatus FFmpegContainer::load_more_frames() {
+PacketGuard::PacketGuard(packet_ptr &packet) : packet{packet} {}
+PacketGuard::~PacketGuard() { av_packet_unref(packet.get()); }
+
+LoadStatus FFmpeg::load_more_frames() {
     if (av_read_frame(fmt_ctx.get(), packet.get()) < 0) return NO_MORE_FRAMES;
 
-    if (packet->stream_index != video->stream_index) {
-        av_packet_unref(packet.get());
-        return LOADED_AUDIO;
-    }
+    // Declaration above
+    PacketGuard packet_guard{packet};
 
-    int ret;
-    int frames_queue_size = frames_queue.size();
-    auto dec_ctx_ptr = video->dec_ctx.get();
+    // WARNING: temporary, audio not implemented yet
+    // if (packet->stream_index != video->stream_index) return LOADED_AUDIO;
 
-    while (frames_queue_size == frames_queue.size()) {
-        // while (frames_queue_size == frames_queue.size()) {
+    LoadStatus status = ERROR;
+    stream_ptr stream = nullptr;
+
+    if (packet->stream_index == video->stream_index) status = LOADED_VIDEO, stream = video;
+    else if (packet->stream_index == audio->stream_index) status = LOADED_AUDIO, stream = audio;
+
+    if (!stream) return status;
+
+    int ret = 0;
+    int frames_queue_size = stream->frames_queue.size();
+    auto dec_ctx_ptr = stream->dec_ctx.get();
+
+    unsigned int i = 0;
+
+    while (frames_queue_size == stream->frames_queue.size()) {
         ret = avcodec_send_packet(dec_ctx_ptr, packet.get());
 
         /*
@@ -174,17 +184,13 @@ LoadStatus FFmpegContainer::load_more_frames() {
          * no inifinite loop is possible
          */
         if (ret < 0) {
-            av_log(NULL, AV_LOG_ERROR, "Error while sending a packet to the decoder\n");
+            printf("Error while sending a packet to the decoder\n");
             return ERROR;
         }
 
         while (ret >= 0) {
             /*
              * Allocates new frame each time
-             */
-            /* If we are skipping frames we don't need
-             * to allocate new space for frames that will
-             * be just skipped
              */
             auto frame_ptr = make_frame_ptr();
             ret = avcodec_receive_frame(dec_ctx_ptr, frame_ptr.get());
@@ -195,35 +201,34 @@ LoadStatus FFmpegContainer::load_more_frames() {
                 return ERROR;
             }
 
-            if (frame_ptr->width > 0 && frame_ptr->height > 0) frames_queue.push_back(frame_ptr);
+            // printf("calling add_frame %d\n", packet->stream_index);
+            stream->add_frame(std::move(frame_ptr));
         }
     }
 
-    av_packet_unref(packet.get());
-
-    return LOADED_VIDEO;
+    return status;
 }
 
-double FFmpegContainer::front_frame_timestamp_in_seconds() {
-    return ((double)frames_queue.front()->pts) * time_base;
+double FFmpeg::front_frame_timestamp_in_seconds() {
+    return ((double)video->frames_queue.front()->pts) * time_base;
 }
 
-int FFmpegContainer::seek_ts(int64_t &ts) {
+int FFmpeg::seek_ts(int64_t &ts) {
     return avformat_seek_file(fmt_ctx.get(), video->stream_index, 0, ts, ts, AVSEEK_FLAG_BACKWARD);
 }
 
-bool FFmpegContainer::loading_cond(const LoadStatus &status) const {
+bool FFmpeg::loading_cond(const LoadStatus &status) const {
     return status != NO_MORE_FRAMES && status != LOADED_VIDEO;
 }
 
-void FFmpegContainer::skip_frames() {
-    frames_queue.clear();
+void FFmpeg::skip_frames() {
+    video->frames_queue.clear();
 
     LoadStatus state;
     do { state = load_more_frames(); } while (loading_cond(state));
 }
 
-FFmpegContainer::~FFmpegContainer() {
+FFmpeg::~FFmpeg() {
 #ifndef __EMSCRIPTEN__
     uint8_t *base;
     size_t total_size;

@@ -16,7 +16,6 @@ struct StateModifier {
 };
 
 struct KeyHandler {
-
     KeyHandler(player_ptr, components_container &);
 
     GLFWkeyfun make_key_callback(opengl_context);

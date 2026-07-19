@@ -7,7 +7,7 @@
 
 #include "ffmpeg/player/last_frame.hpp"
 #include "ffmpeg/player/pause.hpp"
-#include "ffmpeg/player/ffmpeg_container.hpp"
+#include "ffmpeg/player/ffmpeg.hpp"
 #include "types/types.hpp"
 #include "ffmpeg/fetcher/js_fetcher.hpp"
 
@@ -18,8 +18,8 @@ enum VideoPlayerState {
     SETTING_PLAYED_DURATION
 };
 
-class VideoPlayer {
-    FFmpegContainer ffmpeg;
+class Player {
+    FFmpeg ffmpeg;
 
     std::thread duration_setting_thread;
     void join_duration_setter();
@@ -61,7 +61,7 @@ class VideoPlayer {
      */
     LastFrame &operator()();
 
-    ~VideoPlayer();
+    ~Player();
 };
 
 #endif

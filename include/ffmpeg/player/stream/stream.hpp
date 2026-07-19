@@ -3,19 +3,28 @@
 
 #include "ffmpeg/fetcher/js_fetcher.hpp"
 #include "types/types.hpp"
+#include <deque>
 
 extern "C" {
 #include <libavutil/avutil.h>
 }
 
-struct StreamMeta {
+struct Stream {
     decoder_ptr dec_ctx = make_decoder_ptr();
     int stream_index = -1;
 
+    AVStream *get_stream() const;
+
+    virtual int after_init_stream();
     int init_stream(AVMediaType, bool required);
 
-    StreamMeta() = delete;
-    StreamMeta(format_ptr);
+    Stream() = delete;
+    Stream(format_ptr);
+    virtual ~Stream() = default;
+
+    virtual void add_frame(frame_ptr frame) = 0;
+
+    std::deque<frame_ptr> frames_queue;
 
   private:
     format_ptr fmt_ctx;

@@ -13,6 +13,7 @@ class AVPacket;
 class AVIOContext;
 class AVCodec;
 class AVStream;
+class SwrContext;
 namespace Overlay {
 class Component;
 class Animated;
@@ -21,19 +22,21 @@ class AnimatedComponentsHandle;
 namespace Context {
 class OpenGL;
 }
-class VideoPlayer;
-class StreamMeta;
+class Player;
+class Stream;
 
 using textures_t = std::array<unsigned int *, 3>;
 
 using opengl_context = std::shared_ptr<Context::OpenGL>;
-using player_ptr = std::shared_ptr<VideoPlayer>;
+using player_ptr = std::shared_ptr<Player>;
 using frame_ptr = std::shared_ptr<AVFrame>;
-using stream_meta_ptr = std::unique_ptr<StreamMeta>;
+frame_ptr make_frame_ptr();
+using stream_ptr = std::shared_ptr<Stream>;
 using format_ptr = std::shared_ptr<AVFormatContext>;
 using decoder_ptr = std::unique_ptr<AVCodecContext, void (*)(AVCodecContext *)>;
 using packet_ptr = std::unique_ptr<AVPacket, void (*)(AVPacket *)>;
 using avio_ptr = std::unique_ptr<AVIOContext, void (*)(AVIOContext *)>;
+using swr_ptr = std::unique_ptr<SwrContext, void (*)(SwrContext *)>;
 
 enum ComponentsIndex { CONTROLLER = 0, PAUSE, BACKWARD, FORWARD, SPINNER };
 using components_container = std::array<std::shared_ptr<Overlay::Component>, 5>;

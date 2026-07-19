@@ -1,6 +1,6 @@
 #include "opengl/drawers/overlay/components/animated/forward.hpp"
 #include "IconsFontAwesome4.h"
-#include "ffmpeg/player/video_player.hpp" // IWYU pragma: keep
+#include "ffmpeg/player/player.hpp" // IWYU pragma: keep
 
 Overlay::Forward::Forward() : Animated{"Forward"} { x_pos_fraction = 3. / 4.; }
 

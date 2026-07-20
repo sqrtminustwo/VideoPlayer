@@ -143,17 +143,38 @@ int FFmpeg::set_video(const string &filename)
     total_duration = chrono::duration<float>(fmt_ctx->duration / AV_TIME_BASE);
     total_duration_str = duration_to_string(total_duration);
 
-    // auto t = audio->dec_ctx.get();
-    // printf("%s %d\n", t->codec->name, t->ch_layout.nb_channels);
-    // exit(0);
-
     return 0;
 }
 
 PacketGuard::PacketGuard(packet_ptr &packet) : packet{packet} {}
 PacketGuard::~PacketGuard() { av_packet_unref(packet.get()); }
 
-LoadStatus FFmpeg::load_more_frames() {
+double FFmpeg::front_frame_timestamp_in_seconds() {
+    return ((double)video->frames_queue.front()->pts) * time_base;
+}
+
+bool FFmpeg::is_not_fatal_status(const LoadStatus &status) const {
+    return status != NO_MORE_FRAMES && status != ERROR;
+}
+
+LoadStatus FFmpeg::skip_frames(LoadStatus skip_until) {
+    video->frames_queue.clear();
+    LoadStatus state;
+    do { state = load_more_frames(); } while (is_not_fatal_status(state) && state != skip_until);
+
+    return state;
+}
+
+LoadStatus FFmpeg::load_more_frames(LoadStatus needed_status) {
+    LoadStatus status;
+    // do { status = send_packet(); } while (status == NEED_MORE_PACKETS || status !=
+    // needed_status);
+    do { status = send_packet(); } while (status == NEED_MORE_PACKETS || status != needed_status);
+
+    return status;
+}
+
+LoadStatus FFmpeg::send_packet() {
     if (av_read_frame(fmt_ctx.get(), packet.get()) < 0) return NO_MORE_FRAMES;
 
     // Declaration above
@@ -162,67 +183,44 @@ LoadStatus FFmpeg::load_more_frames() {
     // WARNING: temporary, audio not implemented yet
     // if (packet->stream_index != video->stream_index) return LOADED_AUDIO;
 
-    INITIAL_LOAD_STATUS;
+    LoadStatus status = NEED_MORE_PACKETS, on_load;
     stream_ptr stream = nullptr;
 
-    if (packet->stream_index == video->stream_index) status = LOADED_VIDEO, stream = video;
-    else if (packet->stream_index == audio->stream_index) status = LOADED_AUDIO, stream = audio;
+    if (packet->stream_index == video->stream_index) on_load = LOADED_VIDEO, stream = video;
+    else if (packet->stream_index == audio->stream_index) on_load = LOADED_AUDIO, stream = audio;
 
     if (!stream) return status;
 
     int ret = 0;
-    int frames_queue_size = stream->frames_queue.size();
     auto dec_ctx_ptr = stream->dec_ctx.get();
 
     unsigned int i = 0;
 
-    while (frames_queue_size == stream->frames_queue.size()) {
-        ret = avcodec_send_packet(dec_ctx_ptr, packet.get());
+    ret = avcodec_send_packet(dec_ctx_ptr, packet.get());
 
+    if (ret < 0) {
+        printf("Error while sending a packet to the decoder\n");
+        return ERROR;
+    }
+
+    while (ret >= 0) {
         /*
-         * Normally beacuse of this
-         * no inifinite loop is possible
+         * Allocates new frame each time
          */
-        if (ret < 0) {
-            printf("Error while sending a packet to the decoder\n");
+        auto frame_ptr = make_frame_ptr();
+        ret = avcodec_receive_frame(dec_ctx_ptr, frame_ptr.get());
+
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) break;
+        else if (ret < 0) {
+            printf("Error while receiving a frame from the decoder\n");
             return ERROR;
         }
 
-        while (ret >= 0) {
-            /*
-             * Allocates new frame each time
-             */
-            auto frame_ptr = make_frame_ptr();
-            ret = avcodec_receive_frame(dec_ctx_ptr, frame_ptr.get());
-
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) break;
-            else if (ret < 0) {
-                printf("Error while receiving a frame from the decoder\n");
-                return ERROR;
-            }
-
-            // printf("calling add_frame %d\n", packet->stream_index);
-            stream->add_frame(std::move(frame_ptr));
-        }
+        stream->add_frame(std::move(frame_ptr));
+        status = on_load;
     }
 
     return status;
-}
-
-double FFmpeg::front_frame_timestamp_in_seconds() {
-    return ((double)video->frames_queue.front()->pts) * time_base;
-}
-
-bool FFmpeg::loading_cond(const LoadStatus &status) const {
-    return status != NO_MORE_FRAMES && status != LOADED_VIDEO && status != ERROR;
-}
-
-LoadStatus FFmpeg::skip_frames() {
-    video->frames_queue.clear();
-    LoadStatus state;
-    do { state = load_more_frames(); } while (loading_cond(state));
-
-    return state;
 }
 
 FFmpeg::~FFmpeg() {

@@ -47,7 +47,6 @@ swr_ptr Audio::make_swr_ptr(SwrContext *swr_ctx) {
 }
 
 void Audio::add_frame(frame_ptr frame_ptr) {
-    printf("adding audio frame\n");
     auto resampled_frame = make_frame_ptr();
     resampled_frame->sample_rate = frame_ptr->sample_rate;
     resampled_frame->ch_layout = frame_ptr->ch_layout;

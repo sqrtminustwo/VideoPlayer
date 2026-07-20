@@ -52,7 +52,8 @@ LastFrame &Player::operator()() {
     if ((paused || done) && last_frame.get()) return last_frame;
 
     INITIAL_LOAD_STATUS;
-    while (ffmpeg.loading_cond(status)) status = ffmpeg.load_more_frames();
+    while (ffmpeg.is_not_fatal_status(status) && status != LOADED_VIDEO)
+        status = ffmpeg.load_more_frames();
 
     if (ffmpeg.video->frames_queue.empty() && status == NO_MORE_FRAMES) {
         // File ended

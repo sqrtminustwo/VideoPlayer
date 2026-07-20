@@ -58,7 +58,10 @@ int Stream::init_stream(AVMediaType type, bool required) {
 
     auto dec_ptr = dec_ctx.get();
 
-    avcodec_parameters_to_context(dec_ptr, get_stream()->codecpar);
+    if ((ret = avcodec_parameters_to_context(dec_ptr, get_stream()->codecpar)) < 0) {
+        printf("Failed to initialize decoder\n");
+        return ret;
+    }
 
     /* init the video decoder */
     if ((ret = avcodec_open2(dec_ptr, dec, NULL)) < 0) {

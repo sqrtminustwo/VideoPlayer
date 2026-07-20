@@ -7,8 +7,8 @@
 #include "types/types.hpp"
 #include "ffmpeg/player/stream/stream.hpp" // IWYU pragma: keep
 
-enum LoadStatus { LOADED_AUDIO = 0, LOADED_VIDEO, NO_MORE_FRAMES, ERROR, INIT };
-#define INITIAL_LOAD_STATUS auto status = INIT;
+enum LoadStatus { LOADED_AUDIO = 0, LOADED_VIDEO, NEED_MORE_PACKETS, NO_MORE_FRAMES, ERROR };
+#define INITIAL_LOAD_STATUS auto status = NEED_MORE_PACKETS;
 
 struct PacketGuard {
     packet_ptr &packet;
@@ -44,18 +44,18 @@ struct FFmpeg {
     int set_video(const std::string &filename);
 #endif
 
-    bool loading_cond(const LoadStatus &status) const;
-    LoadStatus load_more_frames();
+    bool is_not_fatal_status(const LoadStatus &status) const;
+    LoadStatus load_more_frames(LoadStatus needed_status = LOADED_VIDEO);
+    LoadStatus skip_frames(LoadStatus skip_until = LOADED_VIDEO);
 
     double front_frame_timestamp_in_seconds();
-
-    LoadStatus skip_frames();
 
     ~FFmpeg();
 
   private:
     double time_base = 0;
 
+    LoadStatus send_packet();
     format_ptr make_format_ptr();
     packet_ptr make_packet_ptr();
     avio_ptr make_avio_ptr();

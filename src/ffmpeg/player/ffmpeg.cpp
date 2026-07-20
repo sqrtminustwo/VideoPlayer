@@ -153,29 +153,27 @@ double FFmpeg::front_frame_timestamp_in_seconds() {
     return ((double)video->frames_queue.front()->pts) * time_base;
 }
 
-bool FFmpeg::is_not_fatal_status(const LoadStatus &status) const {
-    return status != NO_MORE_FRAMES && status != ERROR;
+bool FFmpeg::is_loaded(const LoadStatus &status) const {
+    return status == LOADED_VIDEO || status == LOADED_AUDIO;
 }
 
 LoadStatus FFmpeg::skip_frames(LoadStatus skip_until) {
     video->frames_queue.clear();
+
     LoadStatus state;
-    do { state = load_more_frames(); } while (is_not_fatal_status(state) && state != skip_until);
+    do { state = load_more_frames(); } while (state != ERROR && state != skip_until);
 
     return state;
 }
 
-LoadStatus FFmpeg::load_more_frames(LoadStatus needed_status) {
+LoadStatus FFmpeg::load_more_frames() {
     LoadStatus status;
-    // do { status = send_packet(); } while (status == NEED_MORE_PACKETS || status !=
-    // needed_status);
-    do { status = send_packet(); } while (status == NEED_MORE_PACKETS || status != needed_status);
-
+    do { status = send_packet(); } while (status == NEED_MORE_PACKETS);
     return status;
 }
 
 LoadStatus FFmpeg::send_packet() {
-    if (av_read_frame(fmt_ctx.get(), packet.get()) < 0) return NO_MORE_FRAMES;
+    if (av_read_frame(fmt_ctx.get(), packet.get()) < 0) return ERROR;
 
     // Declaration above
     PacketGuard packet_guard{packet};

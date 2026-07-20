@@ -31,7 +31,9 @@ class Player {
     std::atomic<VideoPlayerState> state{VIDEO_NOT_SET};
     time_point start_time;
 
-    auto cast_to_start_time(::duration);
+    auto cast_to_start_time(::duration) const;
+
+    bool aprox_played_duration(::duration) const;
 
   public:
     std::mutex played_duration_mutex;

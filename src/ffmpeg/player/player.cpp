@@ -47,16 +47,15 @@ LastFrame &Player::operator()() {
     }
 
     auto paused = pause.paused_now;
-    auto done = ffmpeg.total_duration - played_duration <= 50ms;
+    auto done = aprox_played_duration(ffmpeg.total_duration);
 
     if ((paused || done) && last_frame.get()) return last_frame;
 
     INITIAL_LOAD_STATUS;
-    while (ffmpeg.is_not_fatal_status(status) && status != LOADED_VIDEO)
-        status = ffmpeg.load_more_frames();
+    while (status != ERROR && status != LOADED_VIDEO) status = ffmpeg.load_more_frames();
 
-    if (ffmpeg.video->frames_queue.empty() && status == NO_MORE_FRAMES) {
-        // File ended
+    if (ffmpeg.video->frames_queue.empty() && status == ERROR) {
+        // File ended or not yet handled error
         played_duration = ffmpeg.total_duration;
         return last_frame;
     }
@@ -100,8 +99,12 @@ void Player::skip_seconds_forward(bool forward) {
     set_played_duration(new_duration);
 }
 
-auto Player::cast_to_start_time(::duration d) {
+auto Player::cast_to_start_time(::duration d) const {
     return chrono::duration_cast<typename decltype(this->start_time)::duration>(d);
+}
+bool Player::aprox_played_duration(::duration d) const {
+    auto diff = d > played_duration ? d - played_duration : played_duration - d;
+    return diff <= 50ms;
 }
 
 void Player::join_duration_setter() {
@@ -111,7 +114,7 @@ void Player::join_duration_setter() {
 void Player::set_played_duration(const duration &new_played_duration) {
     // Already loading, duration below 0, exceeds video length -> don't do anything
     if (is_loading() || (new_played_duration < ZERO_TS) ||
-        (new_played_duration > ffmpeg.total_duration))
+        (new_played_duration > ffmpeg.total_duration) || aprox_played_duration(new_played_duration))
         return;
 
     const auto started_setting = now_f();
@@ -144,7 +147,7 @@ void Player::set_played_duration(const duration &new_played_duration) {
 
         while (true) {
             if (ffmpeg.video->seek_ts(seeked) < 0) return;
-            if (ffmpeg.video->frames_queue.empty()) ffmpeg.load_more_frames();
+            if (ffmpeg.video->frames_queue.empty()) ffmpeg.skip_frames();
 
             if (ffmpeg.front_frame_timestamp_in_seconds() <= duration_count) break;
 
@@ -162,7 +165,8 @@ void Player::set_played_duration(const duration &new_played_duration) {
         }
 
         auto status = LOADED_VIDEO;
-        while (status == LOADED_VIDEO && ffmpeg.front_frame_timestamp_in_seconds() < duration_count)
+        while (ffmpeg.is_loaded(status) &&
+               ffmpeg.front_frame_timestamp_in_seconds() < duration_count)
             status = ffmpeg.skip_frames();
 
         if (is_loading()) {

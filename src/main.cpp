@@ -1,3 +1,6 @@
+#include <array>
+
+#include "miniaudio/audio_device.hpp"
 #include "ffmpeg/player/player.hpp"
 #include "fonts/fonts.hpp"
 #include "opengl/drawers/overlay/components/animated/backward.hpp"
@@ -6,10 +9,8 @@
 #include "opengl/drawers/overlay/components/animated/spinner.hpp"
 #include "opengl/drawers/overlay/components/controller.hpp"
 #include "opengl/drawers/overlay/drawer.hpp"
-#include "stb_image.h"
 #include "opengl/drawers/frame/drawer_yuv420.hpp"
 #include "opengl/keyhandler/keyhandler.hpp"
-#include <array>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -36,6 +37,8 @@ int main(int argc, char **argv) {
         printf("Error setting video!\n");
         exit(1);
     }
+
+    AudioDevice audio_device{player};
 
     auto myimgui_context = std::make_shared<Context::MyImGui>();
     auto opengl_context = std::static_pointer_cast<Context::OpenGL>(myimgui_context);

@@ -21,6 +21,7 @@ enum VideoPlayerState {
 class Player {
     FFmpeg ffmpeg;
 
+    std::mutex played_duration_mutex;
     std::thread duration_setting_thread;
     void join_duration_setter();
 
@@ -36,7 +37,6 @@ class Player {
     bool aprox_played_duration(::duration) const;
 
   public:
-    std::mutex played_duration_mutex;
     duration played_duration;
     Pause pause;
     int skip_seconds = 5;
@@ -44,6 +44,9 @@ class Player {
     AspectRatio get_aspect_ratio() const;
     duration get_total_duration() const;
     std::string get_total_duration_str() const;
+
+    stream_ptr get_audio_stream() const;
+    stream_ptr get_video_stream() const;
 
 #ifdef __EMSCRIPTEN__
     int set_video();

@@ -3,9 +3,6 @@
 #include "ffmpeg/player/stream/video.hpp"
 #include "utils/utils.hpp"
 
-#define MINIAUDIO_IMPLEMENTATION
-#include "miniaudio.h"
-
 #if defined(DEBUG) || defined(__EMSCRIPTEN__)
 #include "buffer/cfb.hpp"
 #else

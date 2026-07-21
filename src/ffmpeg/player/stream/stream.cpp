@@ -35,6 +35,7 @@ AVStream *Stream::get_stream() const {
     if (!fmt_ctx || stream_index < 0) return nullptr;
     return fmt_ctx->streams[stream_index];
 }
+bool Stream::is_valid() const { return get_stream() != nullptr; }
 
 int Stream::init_stream(AVMediaType type, bool required) {
     int ret;

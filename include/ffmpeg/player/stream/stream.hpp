@@ -14,6 +14,7 @@ struct Stream {
     int stream_index = -1;
 
     AVStream *get_stream() const;
+    bool is_valid() const;
 
     virtual int after_init_stream();
     int init_stream(AVMediaType, bool required);

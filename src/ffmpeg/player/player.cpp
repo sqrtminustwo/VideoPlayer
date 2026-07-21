@@ -16,6 +16,9 @@ string Player::get_total_duration_str() const { return ffmpeg.total_duration_str
 
 bool Player::is_loading() { return state == SETTING_PLAYED_DURATION; }
 
+stream_ptr Player::get_audio_stream() const { return ffmpeg.audio; }
+stream_ptr Player::get_video_stream() const { return ffmpeg.video; };
+
 #ifdef __EMSCRIPTEN__
 int Player::set_video()
 #else

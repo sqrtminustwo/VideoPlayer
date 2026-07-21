@@ -150,6 +150,7 @@ PacketGuard::PacketGuard(packet_ptr &packet) : packet{packet} {}
 PacketGuard::~PacketGuard() { av_packet_unref(packet.get()); }
 
 double FFmpeg::front_frame_timestamp_in_seconds() {
+    if (video->frames_queue.empty()) return 0;
     return ((double)video->frames_queue.front()->pts) * time_base;
 }
 

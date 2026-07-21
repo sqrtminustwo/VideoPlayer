@@ -117,22 +117,12 @@ void Player::set_played_duration(const duration &new_played_duration) {
         (new_played_duration > ffmpeg.total_duration) || aprox_played_duration(new_played_duration))
         return;
 
-    const auto started_setting = now_f();
+    const time_point started_setting = now_f();
 
     // old frames are now invalid
     ffmpeg.video->frames_queue.clear();
-    if (new_played_duration > played_duration)
-        this->start_time -= cast_to_start_time(new_played_duration - played_duration);
-    else if (new_played_duration < played_duration)
-        this->start_time += cast_to_start_time(played_duration - new_played_duration);
 
-    /*
-     * There seem to be no problem with seeking forward in time
-     * seeking backwards requires multiple same avformat_seek_file
-     * calls, after research seeking file / frame is a long
-     * time problematic part of ffmpeg so its not my
-     * skill issue
-     */
+    this->start_time = started_setting - cast_to_start_time(new_played_duration);
 
     join_duration_setter();
     state = SETTING_PLAYED_DURATION;
@@ -151,6 +141,8 @@ void Player::set_played_duration(const duration &new_played_duration) {
 
             if (ffmpeg.front_frame_timestamp_in_seconds() <= duration_count) break;
 
+            // Should be after skipping otherwise
+            // you wont be able to set time 0
             if (seeked > -stop && seeked < stop) break;
 
             seeked = max(0., seeked - decriment);

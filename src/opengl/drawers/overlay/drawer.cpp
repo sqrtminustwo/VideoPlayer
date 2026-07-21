@@ -5,12 +5,12 @@
 
 Overlay::Drawer::Drawer() {}
 
-void Overlay::Drawer::operator()(bool *overlay_open, components_container &components) {
+void Overlay::Drawer::operator()(components_container &components) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    if (*overlay_open)
+    if (should_draw)
         for (auto &component : components) (*component)();
 
     ImGui::Render();

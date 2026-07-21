@@ -12,7 +12,7 @@ struct DrawerYUV444 : Frame::Drawer {
                        )
           ){};
 
-    int conditional_on_channel(int dim, TextureChannel) override { return dim; }
+    int conditional_on_channel(int &dim, TextureChannel &) override { return dim; }
 };
 
 #endif

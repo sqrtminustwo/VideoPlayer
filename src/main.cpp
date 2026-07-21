@@ -18,11 +18,14 @@
 #include "emscripten/emscripten_mainloop_stub.h"
 #endif
 
-int main(int argc, char **argv) {
-    auto player = std::make_shared<Player>();
+using namespace std;
 
+int main(int argc, char **argv) {
+    auto player = make_shared<Player>();
+
+    int ret;
 #ifdef __EMSCRIPTEN__
-    auto ret = player->set_video();
+    ret = player->set_video();
 #else
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <video>\n", argv[0]);
@@ -30,35 +33,32 @@ int main(int argc, char **argv) {
     }
     auto filename = argv[1];
 
-    auto ret = player->set_video(filename);
+    ret = player->set_video(filename);
 #endif
 
     if (ret < 0) {
-        printf("Error setting video!\n");
+        fprintf(stderr, "Error setting video!\n");
         exit(1);
     }
 
     AudioDevice audio_device{player};
 
-    auto myimgui_context = std::make_shared<Context::MyImGui>();
-    auto opengl_context = std::static_pointer_cast<Context::OpenGL>(myimgui_context);
+    auto myimgui_context = make_shared<Context::MyImGui>();
+    auto opengl_context = static_pointer_cast<Context::OpenGL>(myimgui_context);
+
     glfwSetWindowAspectRatio(
         opengl_context->window,
         player->get_aspect_ratio().numer,
         player->get_aspect_ratio().denom
     );
-
     init_imgui_fonts(opengl_context->main_scale);
 
     components_container components;
-    components[CONTROLLER] = std::make_shared<Overlay::Controller>(player);
-    components[PAUSE] = std::make_shared<Overlay::Pause>(player);
-    components[SPINNER] = std::make_shared<Overlay::Spinner>(player);
-    components[BACKWARD] = std::make_shared<Overlay::Backward>();
-    components[FORWARD] = std::make_shared<Overlay::Forward>();
-
-    bool show_demo_window = true;
-    bool p_open = true;
+    components[CONTROLLER] = make_shared<Overlay::Controller>(player);
+    components[PAUSE] = make_shared<Overlay::Pause>(player);
+    components[SPINNER] = make_shared<Overlay::Spinner>(player);
+    components[BACKWARD] = make_shared<Overlay::Backward>();
+    components[FORWARD] = make_shared<Overlay::Forward>();
 
     DrawerYUV420 frame_drawer{opengl_context};
     Overlay::Drawer overlay_drawer{};
@@ -76,14 +76,14 @@ int main(int argc, char **argv) {
         auto &frame = (*player)();
         if (!frame.get()) break;
 
-        // WARNING: for now ther is no need to clear screen
-        // new frame will just overvrite old frame + imgui overlay
-        // and then new overlay will be drawn on top
-
         frame_drawer(frame);
         opengl_context->draw();
 
-        overlay_drawer(&p_open, components);
+        overlay_drawer(components);
+
+        // WARNING: there is no need to clear screen
+        // new frame will just overvrite old frame + imgui overlay
+        // and then new overlay will be drawn on top
 
         opengl_context->swap_and_pull();
     }

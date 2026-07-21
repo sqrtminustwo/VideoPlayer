@@ -22,7 +22,7 @@ struct Drawer {
     std::shared_ptr<TextureShader> shader;
     std::shared_ptr<Context::OpenGL> context;
 
-    virtual int conditional_on_channel(int dim, TextureChannel) = 0;
+    virtual int conditional_on_channel(int &dim, TextureChannel &) = 0;
 };
 
 } // namespace Frame

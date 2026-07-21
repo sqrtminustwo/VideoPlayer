@@ -22,7 +22,9 @@ struct DrawerYUV420 : Frame::Drawer {
           ){};
 #endif
 
-    int conditional_on_channel(int dim, TextureChannel c) override { return c > 0 ? dim / 2 : dim; }
+    int conditional_on_channel(int &dim, TextureChannel &c) override {
+        return c > 0 ? dim / 2 : dim;
+    }
 };
 
 #endif

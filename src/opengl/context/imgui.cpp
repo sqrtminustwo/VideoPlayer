@@ -9,7 +9,6 @@ Context::MyImGui::MyImGui() : OpenGL() {
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
-    // ImGui::StyleColorsLight();
 
     // Setup scaling
     ImGuiStyle &style = ImGui::GetStyle();

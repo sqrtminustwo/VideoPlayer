@@ -5,7 +5,7 @@
 Overlay::Pause::Pause(player_ptr player) : player{player}, Animated{"Pause"} {}
 
 const char *Overlay::Pause::get_icon_local(player_ptr player) {
-    return player->pause.paused_now ? ICON_FA_PLAY : ICON_FA_PAUSE;
+    return player->pause.paused_now() ? ICON_FA_PLAY : ICON_FA_PAUSE;
 }
 
 const char *Overlay::Pause::get_icon() { return get_icon_local(player); }

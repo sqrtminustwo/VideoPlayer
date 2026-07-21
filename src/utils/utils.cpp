@@ -13,11 +13,12 @@ void printDebug(string msg) {
 }
 
 string duration_to_string(duration duration) {
-    auto h = chrono::duration_cast<chrono::hours>(duration);
+    using namespace chrono;
+    auto h = duration_cast<hours>(duration);
     duration -= h;
-    auto m = chrono::duration_cast<chrono::minutes>(duration);
+    auto m = duration_cast<minutes>(duration);
     duration -= m;
-    auto s = chrono::duration_cast<chrono::seconds>(duration);
+    auto s = duration_cast<seconds>(duration);
 
     ostringstream out;
     out.fill('0');

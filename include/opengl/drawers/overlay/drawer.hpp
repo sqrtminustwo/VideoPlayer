@@ -7,7 +7,10 @@ namespace Overlay {
 
 struct Drawer {
     Drawer();
-    void operator()(bool *overlay_open, components_container &components);
+    void operator()(components_container &components);
+
+  private:
+    bool should_draw = true;
 };
 
 } // namespace Overlay

@@ -27,12 +27,11 @@ int Player::set_video(const string &filename)
 {
     join_duration_setter();
 
-    int ret;
-#ifdef __EMSCRIPTEN__
-    ret = ffmpeg.set_video();
-#else
-    ret = ffmpeg.set_video(filename);
+    int ret = ffmpeg.set_video(
+#ifndef __EMSCRIPTEN__
+        filename
 #endif
+    );
 
     state = VIDEO_SET_NOT_PLAYED;
 
@@ -49,7 +48,7 @@ LastFrame &Player::operator()() {
         return last_frame;
     }
 
-    auto paused = pause.paused_now;
+    auto paused = pause.paused_now();
     auto done = aprox_played_duration(ffmpeg.total_duration);
 
     if ((paused || done) && last_frame.get()) return last_frame;
@@ -70,9 +69,9 @@ LastFrame &Player::operator()() {
         start_time = now;
     }
 
-    if (pause.adjust_player) {
-        start_time += now - pause.pause_time;
-        pause.adjust_player = false;
+    if (pause.adjust_player()) {
+        start_time += now - pause.pause_time();
+        pause.toggle_adjust_player();
     }
 
     played_duration = duration_diff(now, start_time);
@@ -167,6 +166,7 @@ void Player::set_played_duration(const duration &new_played_duration) {
         if (is_loading()) {
             const auto ended_setting = now_f();
             start_time += cast_to_start_time(ended_setting - started_setting);
+            if (pause.paused_now()) pause.refresh_pause_time();
             state = VIDEO_PLAYING;
         }
     });

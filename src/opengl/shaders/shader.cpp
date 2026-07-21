@@ -62,16 +62,8 @@ Shader::Shader(const string vertexPath, const string fragmentPath) {
 
 void Shader::use() { glUseProgram(ID); }
 
-void Shader::setBool(const string &name, bool value) const {
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
-}
-
 void Shader::setInt(const string &name, int value) const {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
-}
-
-void Shader::setFloat(const string &name, float value) const {
-    glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
 
 void Shader::checkCompileErrors(unsigned int shader, string type) {

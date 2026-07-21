@@ -13,6 +13,11 @@ animated_ptr KeyHandler::index_to_animated(ComponentsIndex i) {
     return dynamic_pointer_cast<Overlay::Animated>(components[i]);
 }
 
+#define HANDLE_KEY(key, execute)                                                                   \
+    case key:                                                                                      \
+        execute();                                                                                 \
+        break;
+
 GLFWkeyfun KeyHandler::make_key_callback(opengl_context opengl_context) {
     glfwSetWindowUserPointer(opengl_context->window, this);
 
@@ -22,26 +27,31 @@ GLFWkeyfun KeyHandler::make_key_callback(opengl_context opengl_context) {
         auto p = (action == GLFW_PRESS);
         auto r_or_p = (action == GLFW_REPEAT) || p;
 
-        if (key == GLFW_KEY_SPACE && p) {
-            keyhandler->make_aimation_thread(
-                keyhandler->pause,
-                keyhandler->index_to_animated(PAUSE)
-            );
-            player->pause.toggle();
-        }
-        if (key == GLFW_KEY_LEFT && r_or_p) {
-            keyhandler->make_aimation_thread(
-                keyhandler->backward,
-                keyhandler->index_to_animated(BACKWARD)
-            );
-            player->skip_seconds_forward(false);
-        }
-        if (key == GLFW_KEY_RIGHT && r_or_p) {
-            keyhandler->make_aimation_thread(
-                keyhandler->forward,
-                keyhandler->index_to_animated(FORWARD)
-            );
-            player->skip_seconds_forward(true);
+        switch (key) {
+            HANDLE_KEY(GLFW_KEY_SPACE, [&] {
+                if (!p) return;
+                keyhandler->make_aimation_thread(
+                    keyhandler->pause,
+                    keyhandler->index_to_animated(PAUSE)
+                );
+                player->pause.toggle();
+            });
+            HANDLE_KEY(GLFW_KEY_LEFT, [&] {
+                if (!r_or_p) return;
+                keyhandler->make_aimation_thread(
+                    keyhandler->backward,
+                    keyhandler->index_to_animated(BACKWARD)
+                );
+                player->skip_seconds_forward(false);
+            });
+            HANDLE_KEY(GLFW_KEY_RIGHT, [&] {
+                if (!r_or_p) return;
+                keyhandler->make_aimation_thread(
+                    keyhandler->forward,
+                    keyhandler->index_to_animated(FORWARD)
+                );
+                player->skip_seconds_forward(true);
+            });
         }
     };
 }
@@ -50,7 +60,7 @@ void KeyHandler::make_aimation_thread(State &state, animated_ptr component) {
     if (state.can_add_new) {
         thread t(&KeyHandler::animate, this, &state, component);
         t.detach();
-    } else component->opacity = 1.f;
+    } else component->opacity.store(1.f);
 }
 
 void sleep_millis(int millis) { this_thread::sleep_for(chrono::milliseconds(millis)); }

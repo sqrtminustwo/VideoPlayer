@@ -1,6 +1,6 @@
 #include <array>
 
-#include "miniaudio/audio_device.hpp"
+// #include "miniaudio/audio_device.hpp"
 #include "ffmpeg/player/player.hpp"
 #include "fonts/fonts.hpp"
 #include "opengl/drawers/overlay/components/animated/backward.hpp"
@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    AudioDevice audio_device{player};
+    // AudioDevice audio_device{player};
 
     auto myimgui_context = make_shared<Context::MyImGui>();
     auto opengl_context = static_pointer_cast<Context::OpenGL>(myimgui_context);

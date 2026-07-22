@@ -46,11 +46,11 @@ using ach = Overlay::AnimatedComponentsHandle &;
 using time_point = std::chrono::system_clock::time_point;
 using duration = std::chrono::duration<float>;
 
-struct AspectRatio {
-    int numer;
-    int denom;
+struct Resolution {
+    int width;
+    int height;
 
-    AspectRatio(int number, int denom);
+    Resolution(int w, int h);
 };
 
 #define CASE(value, f)                                                                             \

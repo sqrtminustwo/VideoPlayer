@@ -5,7 +5,7 @@ set(EXTERNAL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external")
 # FFmpeg
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 if(EMSCRIPTEN)
-    set(FFMPEG_PATH "${CMAKE_CURRENT_SOURCE_DIRCMAKE_CURRENT_SOURCE_DIR}/external/ffmpeg-wasm-built")
+    set(FFMPEG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/ffmpeg-wasm-built")
     list(APPEND CMAKE_FIND_ROOT_PATH "${FFMPEG_PATH}")
 endif()
 find_package(FFmpeg REQUIRED COMPONENTS avdevice avfilter avformat avcodec swscale swresample avutil)

@@ -12,7 +12,7 @@ using namespace chrono_literals;
 
 #define LOCK_PLAYED_DURATION lock_guard<mutex> lock{played_duration_mutex};
 
-AspectRatio Player::get_aspect_ratio() const { return ffmpeg.aspect_ratio; }
+Resolution Player::get_resolution() const { return ffmpeg.aspect_ratio; }
 duration Player::get_total_duration() const { return ffmpeg.total_duration; }
 string Player::get_total_duration_str() const { return ffmpeg.total_duration_str; }
 

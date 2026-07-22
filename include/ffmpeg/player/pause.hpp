@@ -2,6 +2,7 @@
 #define PAUSE_H
 
 #include "types/types.hpp"
+#include <mutex>
 
 class Pause {
     std::mutex pause_mutex;

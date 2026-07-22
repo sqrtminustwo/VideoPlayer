@@ -41,7 +41,7 @@ class Player {
     Pause pause;
     int skip_seconds = 5;
 
-    AspectRatio get_aspect_ratio() const;
+    Resolution get_resolution() const;
     duration get_total_duration() const;
     std::string get_total_duration_str() const;
 

@@ -144,7 +144,7 @@ int FFmpeg::set_video(const string &filename)
     }
 
     time_base = av_q2d(video->get_stream()->time_base);
-    aspect_ratio = AspectRatio(video->dec_ctx->width, video->dec_ctx->height);
+    aspect_ratio = Resolution(video->dec_ctx->width, video->dec_ctx->height);
     total_duration = chrono::duration<float>(fmt_ctx->duration / AV_TIME_BASE);
     total_duration_str = duration_to_string(total_duration);
 

@@ -46,11 +46,8 @@ int main(int argc, char **argv) {
     auto myimgui_context = make_shared<Context::MyImGui>();
     auto opengl_context = static_pointer_cast<Context::OpenGL>(myimgui_context);
 
-    glfwSetWindowAspectRatio(
-        opengl_context->window,
-        player->get_aspect_ratio().numer,
-        player->get_aspect_ratio().denom
-    );
+    auto res = player->get_resolution();
+    glfwSetWindowAspectRatio(opengl_context->window, res.width, res.height);
     init_imgui_fonts(opengl_context->main_scale);
 
     components_container components;
@@ -61,6 +58,7 @@ int main(int argc, char **argv) {
     components[FORWARD] = make_shared<Overlay::Forward>();
 
     DrawerYUV420 frame_drawer{opengl_context};
+    frame_drawer.set_image_resolution(res);
     Overlay::Drawer overlay_drawer{};
 
     KeyHandler keyhandler{player, components};

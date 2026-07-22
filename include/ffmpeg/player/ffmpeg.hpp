@@ -43,7 +43,7 @@ class FFmpeg {
     stream_ptr video;
     stream_ptr audio;
 
-    AspectRatio aspect_ratio{16, 9};
+    Resolution aspect_ratio{16, 9};
     std::string total_duration_str;
     duration total_duration;
 

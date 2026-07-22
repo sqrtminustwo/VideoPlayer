@@ -5,6 +5,7 @@ if [ "$#" -ge 1 ]; then
 fi
 
 preset="clang-debug"
+# preset="release"
 
 cmake --preset "$preset"
 cmake --build "build/$preset"

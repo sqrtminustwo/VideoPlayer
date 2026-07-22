@@ -9,15 +9,15 @@ extern "C" {
 Audio::Audio(format_ptr f) : Stream{f} {}
 
 int Audio::after_init_stream() {
-    SwrContext *swr_ctx{};
-
     if (!is_valid()) {
         printf("No audio\n");
         return -1;
     }
 
     int ret;
+    SwrContext *swr_ctx{};
     auto codecpar = get_stream()->codecpar;
+
     if ((ret = swr_alloc_set_opts2(
              &swr_ctx,
              &codecpar->ch_layout,

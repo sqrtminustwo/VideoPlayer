@@ -11,8 +11,6 @@ struct LastFrame {
 
     void set_to_false();
 
-    // explicit operator bool();
-
   private:
     frame_ptr last_frame = nullptr;
 };

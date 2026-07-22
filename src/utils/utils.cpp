@@ -33,7 +33,7 @@ pair<float, float> get_window_dim() {
     return {w, h};
 }
 
-duration duration_diff(time_point a, time_point b) {
+duration duration_diff(const time_point a, const time_point b) {
     return chrono::duration_cast<chrono::duration<float>>(a - b);
 }
 

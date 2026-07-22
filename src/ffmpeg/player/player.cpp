@@ -10,11 +10,13 @@ extern "C" {
 using namespace std;
 using namespace chrono_literals;
 
+#define LOCK_PLAYED_DURATION lock_guard<mutex> lock{played_duration_mutex};
+
 AspectRatio Player::get_aspect_ratio() const { return ffmpeg.aspect_ratio; }
 duration Player::get_total_duration() const { return ffmpeg.total_duration; }
 string Player::get_total_duration_str() const { return ffmpeg.total_duration_str; }
 
-bool Player::is_loading() { return state == SETTING_PLAYED_DURATION; }
+bool Player::is_loading() const { return state == SETTING_PLAYED_DURATION; }
 
 stream_ptr Player::get_audio_stream() const { return ffmpeg.audio; }
 stream_ptr Player::get_video_stream() const { return ffmpeg.video; };
@@ -44,7 +46,7 @@ LastFrame &Player::operator()() {
     if (is_loading()) return last_frame;
 
     if (state == VIDEO_NOT_SET) {
-        printDebug("No video set, can't play!");
+        fprintf(stderr, "No video set, can't play!");
         return last_frame;
     }
 
@@ -93,7 +95,7 @@ void Player::skip_seconds_forward(bool forward) {
 
     duration new_duration;
     {
-        lock_guard<mutex> guard{played_duration_mutex};
+        LOCK_PLAYED_DURATION;
         new_duration = forward ? min(played_duration + skip_duration, ffmpeg.total_duration)
                                : max(played_duration - skip_duration, ZERO_TS);
     }
@@ -105,8 +107,7 @@ auto Player::cast_to_start_time(::duration d) const {
     return chrono::duration_cast<typename decltype(this->start_time)::duration>(d);
 }
 bool Player::aprox_played_duration(::duration d) const {
-    auto diff = d > played_duration ? d - played_duration : played_duration - d;
-    return diff <= 50ms;
+    return std::chrono::abs(d - played_duration) <= 50ms;
 }
 
 void Player::join_duration_setter() {
@@ -124,6 +125,7 @@ void Player::set_played_duration(const duration &new_played_duration) {
     // old frames are now invalid
     ffmpeg.video->frames_queue.clear();
 
+    // started_setting = now
     this->start_time = started_setting - cast_to_start_time(new_played_duration);
 
     join_duration_setter();
@@ -153,7 +155,7 @@ void Player::set_played_duration(const duration &new_played_duration) {
         // Seek forward to exact frame
         duration old_played_duration;
         {
-            lock_guard<mutex> guard{played_duration_mutex};
+            LOCK_PLAYED_DURATION;
             old_played_duration = played_duration;
             played_duration = new_played_duration;
         }

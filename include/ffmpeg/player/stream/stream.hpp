@@ -32,7 +32,7 @@ struct Stream {
   private:
     format_ptr fmt_ctx;
 
-    decoder_ptr make_decoder_ptr(const AVCodec * = NULL);
+    decoder_ptr make_decoder_ptr(const AVCodec * = NULL) const;
 };
 
 #endif

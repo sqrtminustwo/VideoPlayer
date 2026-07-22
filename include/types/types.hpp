@@ -53,4 +53,9 @@ struct AspectRatio {
     AspectRatio(int number, int denom);
 };
 
+#define CASE(value, f)                                                                             \
+    case value:                                                                                    \
+        f();                                                                                       \
+        break;
+
 #endif

@@ -13,11 +13,6 @@ animated_ptr KeyHandler::index_to_animated(ComponentsIndex i) {
     return dynamic_pointer_cast<Overlay::Animated>(components[i]);
 }
 
-#define HANDLE_KEY(key, execute)                                                                   \
-    case key:                                                                                      \
-        execute();                                                                                 \
-        break;
-
 GLFWkeyfun KeyHandler::make_key_callback(opengl_context opengl_context) {
     glfwSetWindowUserPointer(opengl_context->window, this);
 
@@ -28,7 +23,7 @@ GLFWkeyfun KeyHandler::make_key_callback(opengl_context opengl_context) {
         auto r_or_p = (action == GLFW_REPEAT) || p;
 
         switch (key) {
-            HANDLE_KEY(GLFW_KEY_SPACE, [&] {
+            CASE(GLFW_KEY_SPACE, [&] {
                 if (!p) return;
                 keyhandler->make_aimation_thread(
                     keyhandler->pause,
@@ -36,7 +31,7 @@ GLFWkeyfun KeyHandler::make_key_callback(opengl_context opengl_context) {
                 );
                 player->pause.toggle();
             });
-            HANDLE_KEY(GLFW_KEY_LEFT, [&] {
+            CASE(GLFW_KEY_LEFT, [&] {
                 if (!r_or_p) return;
                 keyhandler->make_aimation_thread(
                     keyhandler->backward,
@@ -44,7 +39,7 @@ GLFWkeyfun KeyHandler::make_key_callback(opengl_context opengl_context) {
                 );
                 player->skip_seconds_forward(false);
             });
-            HANDLE_KEY(GLFW_KEY_RIGHT, [&] {
+            CASE(GLFW_KEY_RIGHT, [&] {
                 if (!r_or_p) return;
                 keyhandler->make_aimation_thread(
                     keyhandler->forward,

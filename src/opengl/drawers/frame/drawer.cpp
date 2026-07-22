@@ -18,7 +18,8 @@ Frame::Drawer::Drawer(
 void Frame::Drawer::operator()(LastFrame &frame) {
     if (!frame.should_send_to_gpu) return;
 
-    shader->use();
+    // This is not needed since we only use 1 shader
+    // shader->use();
 
     for (int i = 0; i < NUM_OF_TEXTURES; i++) {
         TextureChannel channel = static_cast<TextureChannel>(i);

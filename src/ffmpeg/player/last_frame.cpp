@@ -7,6 +7,4 @@ void LastFrame::set(frame_ptr &frame) {
 
 frame_ptr LastFrame::get() const { return last_frame; }
 
-// LastFrame::operator bool() { return last_frame == nullptr; }
-
 void LastFrame::set_to_false() { should_send_to_gpu = false; }

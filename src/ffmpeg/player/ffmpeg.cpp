@@ -1,6 +1,7 @@
 #include "ffmpeg/player/ffmpeg.hpp"
 #include "ffmpeg/player/stream/audio.hpp"
 #include "ffmpeg/player/stream/video.hpp"
+#include "types/types.hpp"
 #include "utils/utils.hpp"
 
 #if defined(DEBUG) || defined(__EMSCRIPTEN__)
@@ -19,6 +20,7 @@ using namespace std;
 
 format_ptr FFmpeg::make_format_ptr() {
     return format_ptr(avformat_alloc_context(), [](AVFormatContext *f) {
+        if (!f) return;
         avformat_close_input(&f);
     });
 }
@@ -31,6 +33,8 @@ avio_ptr FFmpeg::make_avio_ptr() {
     });
 }
 
+// Dont check for f not being nullptr for efficiency
+// as packets are constantly created and freed
 packet_ptr FFmpeg::make_packet_ptr() {
     return packet_ptr(av_packet_alloc(), [](AVPacket *f) { av_packet_free(&f); });
 }
@@ -44,9 +48,11 @@ static int64_t seek(void *opaque, int64_t offset, int whence) {
     // https://www.ffmpeg.org/doxygen/2.3/avio_8h.html#afc6af68de5304c6cea23a785c1f94cd5
     whence &= ~AVSEEK_FORCE;
 
-    if (whence == SEEK_SET) bd->set_offset(offset);
-    else if (whence == SEEK_CUR) bd->set_offset(bd->get_offset() + offset);
-    else if (whence == SEEK_END) bd->set_offset(bd->get_total_size() + offset);
+    switch (whence) {
+        CASE(SEEK_SET, [&] { bd->set_offset(offset); });
+        CASE(SEEK_CUR, [&] { bd->set_offset(bd->get_offset() + offset); });
+        CASE(SEEK_END, [&] { bd->set_offset(bd->get_total_size() + offset); });
+    }
 
     if (bd->get_offset() > bd->get_total_size() || bd->get_offset() < 0) return -1;
 
@@ -74,7 +80,6 @@ int FFmpeg::set_video(const string &filename)
         printf("Failed to open file!\n");
         return -1;
     }
-
 #ifdef DEBUG
     fetcher.file = buffer;
     fetcher.file_size = buffer_size;
@@ -131,9 +136,12 @@ int FFmpeg::set_video(const string &filename)
     video = make_unique<Video>(fmt_ctx);
     audio = make_unique<Audio>(fmt_ctx);
 
-    bool required;
-    video->init_stream(AVMEDIA_TYPE_VIDEO, required = true);
-    audio->init_stream(AVMEDIA_TYPE_AUDIO, required = false);
+    // Scope protect required
+    {
+        bool required;
+        video->init_stream(AVMEDIA_TYPE_VIDEO, required = true);
+        audio->init_stream(AVMEDIA_TYPE_AUDIO, required = false);
+    }
 
     time_base = av_q2d(video->get_stream()->time_base);
     aspect_ratio = AspectRatio(video->dec_ctx->width, video->dec_ctx->height);
@@ -143,10 +151,7 @@ int FFmpeg::set_video(const string &filename)
     return 0;
 }
 
-PacketGuard::PacketGuard(packet_ptr &packet) : packet{packet} {}
-PacketGuard::~PacketGuard() { av_packet_unref(packet.get()); }
-
-double FFmpeg::front_frame_timestamp_in_seconds() {
+double FFmpeg::front_frame_timestamp_in_seconds() const {
     if (video->frames_queue.empty()) return 0;
     return ((double)video->frames_queue.front()->pts) * time_base;
 }
@@ -160,7 +165,6 @@ LoadStatus FFmpeg::skip_frames(LoadStatus skip_until) {
 
     LoadStatus state;
     do { state = load_more_frames(); } while (state != ERROR && state != skip_until);
-
     return state;
 }
 
@@ -170,14 +174,14 @@ LoadStatus FFmpeg::load_more_frames() {
     return status;
 }
 
+PacketGuard::PacketGuard(packet_ptr &packet) : packet{packet} {}
+PacketGuard::~PacketGuard() { av_packet_unref(packet.get()); }
+
 LoadStatus FFmpeg::send_packet() {
     if (av_read_frame(fmt_ctx.get(), packet.get()) < 0) return ERROR;
 
     // Declaration above
     PacketGuard packet_guard{packet};
-
-    // WARNING: temporary, audio not implemented yet
-    // if (packet->stream_index != video->stream_index) return LOADED_AUDIO;
 
     LoadStatus status = NEED_MORE_PACKETS, on_load;
     stream_ptr stream = nullptr;
@@ -189,8 +193,6 @@ LoadStatus FFmpeg::send_packet() {
 
     int ret = 0;
     auto dec_ctx_ptr = stream->dec_ctx.get();
-
-    unsigned int i = 0;
 
     ret = avcodec_send_packet(dec_ctx_ptr, packet.get());
 

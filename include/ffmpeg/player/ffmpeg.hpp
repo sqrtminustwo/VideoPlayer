@@ -57,7 +57,7 @@ class FFmpeg {
     LoadStatus load_more_frames();
     LoadStatus skip_frames(LoadStatus skip_until = LOADED_VIDEO);
 
-    double front_frame_timestamp_in_seconds();
+    double front_frame_timestamp_in_seconds() const;
 
     ~FFmpeg();
 };

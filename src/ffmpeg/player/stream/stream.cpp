@@ -22,7 +22,7 @@ int Stream::seek_ts(const double &duration_count) {
     return ret;
 }
 
-decoder_ptr Stream::make_decoder_ptr(const AVCodec *dec) {
+decoder_ptr Stream::make_decoder_ptr(const AVCodec *dec) const {
     // Initial initialization
     if (dec == NULL) return decoder_ptr(nullptr, [](AVCodecContext *) {});
 
@@ -46,7 +46,7 @@ int Stream::init_stream(AVMediaType type, bool required) {
     /* select the video stream */
     if ((ret = av_find_best_stream(fmt_ctx.get(), type, -1, -1, &dec, 0)) < 0) {
         std::cout << "Cannot find a stream of type " << type_str << " in the input file\n";
-        return required;
+        return required ? ret : 0;
     }
     stream_index = ret;
 

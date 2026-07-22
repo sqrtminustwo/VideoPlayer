@@ -54,7 +54,7 @@ class Player {
     int set_video(const std::string &filename);
 #endif
 
-    bool is_loading();
+    bool is_loading() const;
 
     void set_played_duration(const duration &);
     void skip_seconds_forward(bool);

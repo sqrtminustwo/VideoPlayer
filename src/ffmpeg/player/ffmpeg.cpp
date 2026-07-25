@@ -5,9 +5,14 @@
 #include "utils/utils.hpp"
 
 #if defined(DEBUG) || defined(__EMSCRIPTEN__)
-#include "buffer/cfb.hpp"
+
+// #include "buffer/cfb1.hpp"
+#include "buffer/cfb2.hpp"
+
 #else
+
 #include "buffer/default_buffer.hpp"
+
 #endif
 
 extern "C" {
@@ -87,7 +92,17 @@ int FFmpeg::set_video(const string &filename)
 #endif
 
 #if defined(DEBUG) || defined(__EMSCRIPTEN__)
-    bd = new CyclicFragmentBuffer{&fetcher, avio_ctx_buffer_size * 4};
+    // bd = new CyclicFragmentBuffer1{
+    //     &fetcher,
+    //     avio_ctx_buffer_size * 4,
+    // };
+    bd = new CyclicFragmentBuffer2{
+        &fetcher,
+        avio_ctx_buffer_size * 4,
+        avio_ctx_buffer_size * 3,
+        avio_ctx_buffer_size,
+        LoadingMethod::FULL
+    };
 #else
     bd = new DefaultBuffer();
 

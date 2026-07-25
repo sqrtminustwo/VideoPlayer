@@ -6,7 +6,7 @@
 
 struct JSFetcher : public DataFetcher {
     int getTotalSizeLocal() override;
-    void fetchFramesLocal(int offset, uint8_t *buf, int length) override;
+    void fetchFramesLocal(int_type offset, uint8_t *buf, int_type length) override;
 };
 
 #endif

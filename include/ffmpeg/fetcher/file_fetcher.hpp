@@ -11,7 +11,7 @@ struct FileFetcher : public DataFetcher {
     size_t file_size;
 
     int getTotalSizeLocal() override;
-    void fetchFramesLocal(int offset, uint8_t *buf, int length) override;
+    void fetchFramesLocal(int_type offset, uint8_t *buf, int_type length) override;
 };
 
 #endif

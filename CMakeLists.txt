@@ -7,11 +7,11 @@ if(EMSCRIPTEN)
 endif()
 
 # C++ settings
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-# add_compile_definitions(DEBUG)
+add_compile_definitions(DEBUG)
 
 # Collect source files
 file(GLOB_RECURSE CPP_SOURCES CONFIGURE_DEPENDS
@@ -41,9 +41,15 @@ if(EMSCRIPTEN)
         "-sASYNCIFY"
         "-pthread"
         "-sPTHREAD_POOL_SIZE=4"
+        # Not a solution, window is not defined in background thread
+        # "-sPROXY_TO_PTHREAD=1"
+        # "-sOFFSCREENCANVAS_SUPPORT=1"
+        # "-sOFFSCREENCANVASES_TO_PTHREAD='#canvas'"
+        # "-sOFFSCREEN_FRAMEBUFFER=1"
         "-sUSE_GLFW=3"
         "-sUSE_WEBGL2=1"
         "-sALLOW_MEMORY_GROWTH"
+        # "-sINITIAL_MEMORY=512MB"
         "-msimd128"
         "SHELL:--js-library ${CMAKE_CURRENT_SOURCE_DIR}/capi/capi.js"
         "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/shaders@shaders"

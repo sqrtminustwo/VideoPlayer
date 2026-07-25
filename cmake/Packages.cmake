@@ -25,7 +25,8 @@ set(
 
 set(
     FFMPEG_CIRCULAR_BUFFER_SRC
-    ${FFMPEG_CIRCULAR_BUFFER}/src/buffer/cfb.cpp
+    ${FFMPEG_CIRCULAR_BUFFER}/src/buffer/cfb1.cpp
+    ${FFMPEG_CIRCULAR_BUFFER}/src/buffer/cfb2.cpp
     ${FFMPEG_CIRCULAR_BUFFER}/src/buffer/default_buffer.cpp
     ${FFMPEG_CIRCULAR_BUFFER}/src/buffer/buffer.cpp
 )

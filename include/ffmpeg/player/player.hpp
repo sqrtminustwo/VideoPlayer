@@ -56,8 +56,8 @@ class Player {
 
     bool is_loading() const;
 
-    void set_played_duration(const duration &);
-    void skip_seconds_forward(bool);
+    // void set_played_duration(const duration &);
+    // void skip_seconds_forward(bool);
 
     /** @brief Get next frame of loaded video
      *  @params bool paused, whether video is paused or no

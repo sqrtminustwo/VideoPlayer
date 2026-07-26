@@ -31,22 +31,22 @@ GLFWkeyfun KeyHandler::make_key_callback(opengl_context opengl_context) {
                 );
                 player->pause.toggle();
             });
-            CASE(GLFW_KEY_LEFT, [&] {
-                if (!r_or_p) return;
-                keyhandler->make_aimation_thread(
-                    keyhandler->backward,
-                    keyhandler->index_to_animated(BACKWARD)
-                );
-                player->skip_seconds_forward(false);
-            });
-            CASE(GLFW_KEY_RIGHT, [&] {
-                if (!r_or_p) return;
-                keyhandler->make_aimation_thread(
-                    keyhandler->forward,
-                    keyhandler->index_to_animated(FORWARD)
-                );
-                player->skip_seconds_forward(true);
-            });
+            // CASE(GLFW_KEY_LEFT, [&] {
+            //     if (!r_or_p) return;
+            //     keyhandler->make_aimation_thread(
+            //         keyhandler->backward,
+            //         keyhandler->index_to_animated(BACKWARD)
+            //     );
+            //     player->skip_seconds_forward(false);
+            // });
+            // CASE(GLFW_KEY_RIGHT, [&] {
+            //     if (!r_or_p) return;
+            //     keyhandler->make_aimation_thread(
+            //         keyhandler->forward,
+            //         keyhandler->index_to_animated(FORWARD)
+            //     );
+            //     player->skip_seconds_forward(true);
+            // });
         }
     };
 }

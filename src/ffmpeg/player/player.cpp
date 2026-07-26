@@ -1,6 +1,6 @@
 #include "ffmpeg/player/player.hpp"
-#include "types/constants.hpp"
 #include "utils/utils.hpp"
+// #include "types/constants.hpp"
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -90,18 +90,18 @@ LastFrame &Player::operator()() {
     return last_frame;
 }
 
-void Player::skip_seconds_forward(bool forward) {
-    auto skip_duration = chrono::seconds(skip_seconds);
-
-    duration new_duration;
-    {
-        LOCK_PLAYED_DURATION;
-        new_duration = forward ? min(played_duration + skip_duration, ffmpeg.total_duration)
-                               : max(played_duration - skip_duration, ZERO_TS);
-    }
-
-    set_played_duration(new_duration);
-}
+// void Player::skip_seconds_forward(bool forward) {
+//     auto skip_duration = chrono::seconds(skip_seconds);
+//
+//     duration new_duration;
+//     {
+//         LOCK_PLAYED_DURATION;
+//         new_duration = forward ? min(played_duration + skip_duration, ffmpeg.total_duration)
+//                                : max(played_duration - skip_duration, ZERO_TS);
+//     }
+//
+//     set_played_duration(new_duration);
+// }
 
 auto Player::cast_to_start_time(::duration d) const {
     return chrono::duration_cast<typename decltype(this->start_time)::duration>(d);
@@ -114,64 +114,64 @@ void Player::join_duration_setter() {
     if (duration_setting_thread.joinable()) duration_setting_thread.join();
 }
 
-void Player::set_played_duration(const duration &new_played_duration) {
-    // Already loading, duration below 0, exceeds video length -> don't do anything
-    if (is_loading() || (new_played_duration < ZERO_TS) ||
-        (new_played_duration > ffmpeg.total_duration) || aprox_played_duration(new_played_duration))
-        return;
-
-    const time_point started_setting = now_f();
-
-    // old frames are now invalid
-    ffmpeg.video->frames_queue.clear();
-
-    // started_setting = now
-    this->start_time = started_setting - cast_to_start_time(new_played_duration);
-
-    join_duration_setter();
-    state = SETTING_PLAYED_DURATION;
-
-    duration_setting_thread = thread([this, new_played_duration, started_setting]() {
-        double duration_count = chrono::duration<double>(new_played_duration).count();
-
-        // Seek to keyframe <= the duration
-        auto seeked = duration_count;
-        double decriment = 1.;
-        auto stop = 1e-5;
-
-        while (true) {
-            if (ffmpeg.video->seek_ts(seeked) < 0) return;
-            if (ffmpeg.video->frames_queue.empty()) ffmpeg.skip_frames();
-
-            if (ffmpeg.front_frame_timestamp_in_seconds() <= duration_count) break;
-
-            // Should be after skipping otherwise
-            // you wont be able to set time 0
-            if (seeked > -stop && seeked < stop) break;
-
-            seeked = max(0., seeked - decriment);
-        }
-
-        // Seek forward to exact frame
-        duration old_played_duration;
-        {
-            LOCK_PLAYED_DURATION;
-            old_played_duration = played_duration;
-            played_duration = new_played_duration;
-        }
-
-        auto status = LOADED_VIDEO;
-        while (ffmpeg.is_loaded(status) &&
-               ffmpeg.front_frame_timestamp_in_seconds() < duration_count)
-            status = ffmpeg.skip_frames();
-
-        if (is_loading()) {
-            const auto ended_setting = now_f();
-            start_time += cast_to_start_time(ended_setting - started_setting);
-            if (pause.paused_now()) pause.refresh_pause_time();
-            state = VIDEO_PLAYING;
-        }
-    });
-}
+// void Player::set_played_duration(const duration &new_played_duration) {
+//     // Already loading, duration below 0, exceeds video length -> don't do anything
+//     if (is_loading() || (new_played_duration < ZERO_TS) ||
+//         (new_played_duration > ffmpeg.total_duration) ||
+//         aprox_played_duration(new_played_duration)) return;
+//
+//     const time_point started_setting = now_f();
+//
+//     // old frames are now invalid
+//     ffmpeg.video->frames_queue.clear();
+//
+//     // started_setting = now
+//     this->start_time = started_setting - cast_to_start_time(new_played_duration);
+//
+//     join_duration_setter();
+//     state = SETTING_PLAYED_DURATION;
+//
+//     duration_setting_thread = thread([this, new_played_duration, started_setting]() {
+//         double duration_count = chrono::duration<double>(new_played_duration).count();
+//
+//         // Seek to keyframe <= the duration
+//         auto seeked = duration_count;
+//         double decriment = 1.;
+//         auto stop = 1e-5;
+//
+//         while (true) {
+//             if (ffmpeg.video->seek_ts(seeked) < 0) return;
+//             if (ffmpeg.video->frames_queue.empty()) ffmpeg.skip_frames();
+//
+//             if (ffmpeg.front_frame_timestamp_in_seconds() <= duration_count) break;
+//
+//             // Should be after skipping otherwise
+//             // you wont be able to set time 0
+//             if (seeked > -stop && seeked < stop) break;
+//
+//             seeked = max(0., seeked - decriment);
+//         }
+//
+//         // Seek forward to exact frame
+//         duration old_played_duration;
+//         {
+//             LOCK_PLAYED_DURATION;
+//             old_played_duration = played_duration;
+//             played_duration = new_played_duration;
+//         }
+//
+//         auto status = LOADED_VIDEO;
+//         while (ffmpeg.is_loaded(status) &&
+//                ffmpeg.front_frame_timestamp_in_seconds() < duration_count)
+//             status = ffmpeg.skip_frames();
+//
+//         if (is_loading()) {
+//             const auto ended_setting = now_f();
+//             start_time += cast_to_start_time(ended_setting - started_setting);
+//             if (pause.paused_now()) pause.refresh_pause_time();
+//             state = VIDEO_PLAYING;
+//         }
+//     });
+// }
 
 Player::~Player() { join_duration_setter(); }

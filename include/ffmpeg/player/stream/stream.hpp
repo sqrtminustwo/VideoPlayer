@@ -2,12 +2,14 @@
 #define STREAM_META_H
 
 #include "ffmpeg/fetcher/js_fetcher.hpp"
+#include "utils/guarded_que.hpp"
 #include "types/types.hpp"
-#include <deque>
 
 extern "C" {
 #include <libavutil/avutil.h>
 }
+
+using frame_que = std::deque<frame_ptr>;
 
 struct Stream {
     decoder_ptr dec_ctx = make_decoder_ptr();
@@ -23,9 +25,10 @@ struct Stream {
     Stream(format_ptr);
     virtual ~Stream() = default;
 
-    virtual void add_frame(frame_ptr frame) = 0;
+    GuardedQue<frame_ptr> frames_queue;
 
-    std::deque<frame_ptr> frames_queue;
+    virtual void add_frame(frame_ptr frame) = 0;
+    void frames_queue_operation();
 
     int seek_ts(const double &);
 

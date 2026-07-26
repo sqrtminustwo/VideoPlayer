@@ -8,6 +8,7 @@
 
 // #include "buffer/cfb1.hpp"
 #include "buffer/cfb2.hpp"
+#include "buffer/seq_guard.hpp"
 
 #else
 
@@ -96,13 +97,18 @@ int FFmpeg::set_video(const string &filename)
     //     &fetcher,
     //     avio_ctx_buffer_size * 4,
     // };
+    LoadingMethod loading_method = FULL;
     bd = new CyclicFragmentBuffer2{
         &fetcher,
         avio_ctx_buffer_size * 4,
         avio_ctx_buffer_size * 3,
         avio_ctx_buffer_size,
-        LoadingMethod::FULL
+        loading_method
     };
+
+    // Even tho this normally needed only in avformat_open_input
+    // To save preprocessor commands it can be placed here
+    SeqGuard guard{dynamic_cast<CyclicFragmentBuffer2 *>(bd), FULL};
 #else
     bd = new DefaultBuffer();
 

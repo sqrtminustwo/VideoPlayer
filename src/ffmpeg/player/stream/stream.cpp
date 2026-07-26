@@ -6,6 +6,8 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
+using namespace std;
+
 Stream::Stream(::format_ptr fmt_ctx) : fmt_ctx{fmt_ctx} {}
 
 int Stream::seek_ts(const double &duration_count) {
@@ -41,11 +43,11 @@ int Stream::init_stream(AVMediaType type, bool required) {
     int ret;
     const AVCodec *dec;
 
-    auto type_str = '\"' + std::string{av_get_media_type_string(type)} + '\"';
+    auto type_str = '\"' + string{av_get_media_type_string(type)} + '\"';
 
     /* select the video stream */
     if ((ret = av_find_best_stream(fmt_ctx.get(), type, -1, -1, &dec, 0)) < 0) {
-        std::cout << "Cannot find a stream of type " << type_str << " in the input file\n";
+        cout << "Cannot find a stream of type " << type_str << " in the input file\n";
         return required ? ret : 0;
     }
     stream_index = ret;
@@ -53,7 +55,7 @@ int Stream::init_stream(AVMediaType type, bool required) {
     /* create decoding context */
     dec_ctx = make_decoder_ptr(dec);
     if (!dec_ctx) {
-        std::cout << "Failed to create decoder for type " << type_str << "\n";
+        cout << "Failed to create decoder for type " << type_str << "\n";
         return AVERROR(ENOMEM);
     }
 
@@ -66,7 +68,7 @@ int Stream::init_stream(AVMediaType type, bool required) {
 
     /* init the video decoder */
     if ((ret = avcodec_open2(dec_ptr, dec, NULL)) < 0) {
-        std::cout << "Cannot open decoder for type " << type_str << "\n";
+        cout << "Cannot open decoder for type " << type_str << "\n";
         return ret;
     }
 

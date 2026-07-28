@@ -63,14 +63,15 @@ LastFrame &Player::operator()() {
         return last_frame;
     }
 
-    auto paused = pause.paused_now();
-    auto done = aprox_played_duration(ffmpeg.total_duration);
+    // There is always a last frame is video is set
+    // either black or previous frame
+    if (pause.paused_now()) return last_frame;
+    if (aprox_played_duration(ffmpeg.total_duration)) {
+        played_duration = ffmpeg.total_duration;
+        return last_frame;
+    }
 
-    if ((paused || done) && last_frame.get()) return last_frame;
-
-    auto load_status = ffmpeg.get_load_status();
-    if (load_status == END || load_status == ERROR) {
-        // File ended or not yet handled error
+    if (ffmpeg.get_load_status() == ERROR) {
         played_duration = ffmpeg.total_duration;
         return last_frame;
     }

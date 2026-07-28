@@ -6,10 +6,10 @@
 #include "utils/guards/packet_guard.hpp"
 #include "utils/utils.hpp"
 #include <atomic>
+#include <libavutil/error.h>
 
 #if defined(DEBUG) || defined(__EMSCRIPTEN__)
 
-// #include "buffer/cfb1.hpp"
 #include "buffer/cfb2.hpp"
 #include "buffer/seq_guard.hpp"
 
@@ -125,10 +125,6 @@ int FFmpeg::set_video(const string &filename)
 #endif
 
 #if defined(DEBUG) || defined(__EMSCRIPTEN__)
-    // bd = new CyclicFragmentBuffer1{
-    //     &fetcher,
-    //     avio_ctx_buffer_size * 4,
-    // };
     LoadingMethod loading_method = FULL;
     bd = new CyclicFragmentBuffer2{
         &fetcher,
@@ -232,10 +228,17 @@ LoadStatus FFmpeg::load_more_frames() {
     return status;
 }
 
-LoadStatus FFmpeg::send_packet() {
-    if (av_read_frame(fmt_ctx.get(), packet.get()) < 0) return ERROR;
+#define RETURN                                                                                     \
+    {                                                                                              \
+        auto new_load_status = ret == AVERROR_EOF ? END : ERROR;                                   \
+        return (load_status = new_load_status);                                                    \
+    }
 
-    // Declaration above
+LoadStatus FFmpeg::send_packet() {
+    int ret = 0;
+
+    if ((ret = av_read_frame(fmt_ctx.get(), packet.get())) < 0) RETURN;
+
     PacketGuard packet_guard{packet};
 
     load_status = NEED_MORE_PACKETS;
@@ -247,14 +250,13 @@ LoadStatus FFmpeg::send_packet() {
 
     if (!stream) return load_status;
 
-    int ret = 0;
     auto dec_ctx_ptr = stream->dec_ctx.get();
 
     ret = avcodec_send_packet(dec_ctx_ptr, packet.get());
 
     if (ret < 0) {
         printf("Error while sending a packet to the decoder\n");
-        return ERROR;
+        RETURN;
     }
 
     while (ret >= 0) {
@@ -265,13 +267,7 @@ LoadStatus FFmpeg::send_packet() {
         ret = avcodec_receive_frame(dec_ctx_ptr, frame_ptr.get());
 
         if (ret == AVERROR(EAGAIN)) break;
-        else if (ret == AVERROR_EOF) {
-            load_status = END;
-        } else if (ret < 0) {
-            printf("Error while receiving a frame from the decoder\n");
-            load_status = ERROR;
-            break;
-        }
+        else if (ret < 0) RETURN;
 
         stream->add_frame(std::move(frame_ptr));
         load_status = on_load;
@@ -296,7 +292,7 @@ void FFmpeg::wait_until_loader_thread_paused() {
     pause_loader.paused.wait(paused, memory_order_relaxed);
 }
 void FFmpeg::loader_thread_loop() {
-    LoadStatus status = NEED_MORE_PACKETS;
+    LoadStatus status;
     bool should_stop = false;
 
     while (should_load.load(memory_order_acquire)) {
@@ -307,6 +303,7 @@ void FFmpeg::loader_thread_loop() {
             pause_loader.should_pause.wait(should_stop, memory_order_relaxed);
         }
 
+        status = NEED_MORE_PACKETS;
         while (video->frames_queue.size() < video->frames_queue_size_bound &&
                (status != END && status != ERROR))
             status = send_packet();

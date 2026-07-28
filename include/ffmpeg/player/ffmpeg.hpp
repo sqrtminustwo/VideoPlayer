@@ -11,7 +11,6 @@
 #include <thread>
 
 enum LoadStatus { LOADED_AUDIO = 0, LOADED_VIDEO, NEED_MORE_PACKETS, ERROR, END };
-#define INITIAL_LOAD_STATUS auto status = NEED_MORE_PACKETS;
 
 struct PauseThread {
     std::atomic_bool should_pause = false; // Modified only by thread that requests to stop

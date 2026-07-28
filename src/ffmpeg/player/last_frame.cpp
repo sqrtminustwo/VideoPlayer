@@ -1,6 +1,6 @@
 #include "ffmpeg/player/last_frame.hpp"
 
-void LastFrame::set(frame_ptr &frame) {
+void LastFrame::set(frame_ptr frame) {
     last_frame = frame;
     should_send_to_gpu = true;
 }

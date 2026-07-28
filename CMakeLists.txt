@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(WebScreenShare LANGUAGES C CXX)
+add_definitions(-w)
 
 if(EMSCRIPTEN)
     add_compile_options("-pthread")

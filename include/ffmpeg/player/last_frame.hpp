@@ -7,7 +7,7 @@ struct LastFrame {
     bool should_send_to_gpu = false;
 
     frame_ptr get() const;
-    void set(frame_ptr &);
+    void set(frame_ptr);
 
     void set_to_false();
 

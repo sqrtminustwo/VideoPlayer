@@ -2,7 +2,10 @@
 #include "ffmpeg/player/stream/audio.hpp"
 #include "ffmpeg/player/stream/video.hpp"
 #include "types/types.hpp"
+#include "utils/guards/atomic_boolean_guard.hpp"
+#include "utils/guards/packet_guard.hpp"
 #include "utils/utils.hpp"
+#include <atomic>
 
 #if defined(DEBUG) || defined(__EMSCRIPTEN__)
 
@@ -23,6 +26,35 @@ extern "C" {
 }
 
 using namespace std;
+
+FFmpeg::~FFmpeg() {
+    // Should happend before stopping to wait
+    // otherwise infinite wait in loader_thread_loop
+    should_load.store(false, memory_order_release);
+    // https://isocpp.org/wiki/faq/dtors
+    // Because both streams are constructed in a later function call
+    // they will be destructed after this destructor, thats why this
+    // can't happend in destructor of stream
+    for (auto &stream : {audio, video})
+        if (stream.get()) stream->frames_queue.stop_waiting();
+    join_if_joinable(loader_thread);
+
+#ifndef __EMSCRIPTEN__
+    uint8_t *base;
+    size_t total_size;
+
+#ifdef DEBUG
+    base = fetcher.file;
+    total_size = fetcher.file_size;
+#else
+    base = bd->get_base();
+    total_size = bd->get_total_size();
+#endif
+
+    av_file_unmap(base, total_size - bd->get_offset());
+#endif
+    delete bd;
+}
 
 format_ptr FFmpeg::make_format_ptr() {
     return format_ptr(avformat_alloc_context(), [](AVFormatContext *f) {
@@ -169,14 +201,19 @@ int FFmpeg::set_video(const string &filename)
     total_duration = chrono::duration<float>(fmt_ctx->duration / AV_TIME_BASE);
     total_duration_str = duration_to_string(total_duration);
 
+    should_load.store(true);
+    loader_thread = thread(&FFmpeg::loader_thread_loop, this);
+
     return 0;
 }
 
 double FFmpeg::front_frame_timestamp_in_seconds() const {
-    if (video->frames_queue.empty()) return 0;
-    return ((double)video->frames_queue.front()->pts) * time_base;
+    auto front_frame = video->frames_queue.get_front();
+    if (front_frame == nullptr) return -1;
+    return ((double)front_frame->pts) * time_base;
 }
 
+LoadStatus FFmpeg::get_load_status() const { return load_status.load(memory_order_acquire); }
 bool FFmpeg::is_loaded(const LoadStatus &status) const {
     return status == LOADED_VIDEO || status == LOADED_AUDIO;
 }
@@ -195,22 +232,20 @@ LoadStatus FFmpeg::load_more_frames() {
     return status;
 }
 
-PacketGuard::PacketGuard(packet_ptr &packet) : packet{packet} {}
-PacketGuard::~PacketGuard() { av_packet_unref(packet.get()); }
-
 LoadStatus FFmpeg::send_packet() {
     if (av_read_frame(fmt_ctx.get(), packet.get()) < 0) return ERROR;
 
     // Declaration above
     PacketGuard packet_guard{packet};
 
-    LoadStatus status = NEED_MORE_PACKETS, on_load;
+    load_status = NEED_MORE_PACKETS;
+    LoadStatus on_load;
     stream_ptr stream = nullptr;
 
     if (packet->stream_index == video->stream_index) on_load = LOADED_VIDEO, stream = video;
     else if (packet->stream_index == audio->stream_index) on_load = LOADED_AUDIO, stream = audio;
 
-    if (!stream) return status;
+    if (!stream) return load_status;
 
     int ret = 0;
     auto dec_ctx_ptr = stream->dec_ctx.get();
@@ -226,36 +261,56 @@ LoadStatus FFmpeg::send_packet() {
         /*
          * Allocates new frame each time
          */
-        auto frame_ptr = make_frame_ptr();
+        auto frame_ptr = Stream::make_frame_ptr();
         ret = avcodec_receive_frame(dec_ctx_ptr, frame_ptr.get());
 
-        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) break;
-        else if (ret < 0) {
+        if (ret == AVERROR(EAGAIN)) break;
+        else if (ret == AVERROR_EOF) {
+            load_status = END;
+        } else if (ret < 0) {
             printf("Error while receiving a frame from the decoder\n");
-            return ERROR;
+            load_status = ERROR;
+            break;
         }
 
         stream->add_frame(std::move(frame_ptr));
-        status = on_load;
+        load_status = on_load;
     }
 
-    return status;
+    return load_status;
 }
 
-FFmpeg::~FFmpeg() {
-#ifndef __EMSCRIPTEN__
-    uint8_t *base;
-    size_t total_size;
+AtomicBooleanGuard FFmpeg::get_should_pause_guard() {
+    auto guard = AtomicBooleanGuard{pause_loader.should_pause};
+    video->frames_queue.stop_waiting();
+    return guard;
+}
+void FFmpeg::wait_until_loader_thread_paused() {
+    if (!pause_loader.should_pause.load(memory_order_acquire)) {
+        fprintf(stderr, "Can't wait for loader pause, if should_pause is not set!\n");
+        return;
+    }
 
-#ifdef DEBUG
-    base = fetcher.file;
-    total_size = fetcher.file_size;
-#else
-    base = bd->get_base();
-    total_size = bd->get_total_size();
-#endif
+    auto paused = pause_loader.paused.load(memory_order_acquire);
+    if (paused) return;
+    pause_loader.paused.wait(paused, memory_order_relaxed);
+}
+void FFmpeg::loader_thread_loop() {
+    LoadStatus status = NEED_MORE_PACKETS;
+    bool should_stop = false;
 
-    av_file_unmap(base, total_size - bd->get_offset());
-#endif
-    delete bd;
+    while (should_load.load(memory_order_acquire)) {
+        should_stop = pause_loader.should_pause.load(memory_order_acquire);
+        if (should_stop) {
+            AtomicBooleanGuard guard{pause_loader.paused};
+            pause_loader.paused.notify_one();
+            pause_loader.should_pause.wait(should_stop, memory_order_relaxed);
+        }
+
+        while (video->frames_queue.size() < video->frames_queue_size_bound &&
+               (status != END && status != ERROR))
+            status = send_packet();
+
+        video->frames_queue.wait_for_size_change();
+    }
 }

@@ -11,19 +11,13 @@
 #include "types/types.hpp"
 #include "ffmpeg/fetcher/js_fetcher.hpp"
 
-enum VideoPlayerState {
-    VIDEO_NOT_SET,
-    VIDEO_SET_NOT_PLAYED,
-    VIDEO_PLAYING,
-    SETTING_PLAYED_DURATION
-};
+enum VideoPlayerState { VIDEO_NOT_SET, VIDEO_SET_NOT_PLAYED, VIDEO_PLAYING, LOADING };
 
 class Player {
     FFmpeg ffmpeg;
 
     std::mutex played_duration_mutex;
     std::thread duration_setting_thread;
-    void join_duration_setter();
 
     // Keep last frame for pause / video end
     // so that video is never actually done
@@ -56,8 +50,8 @@ class Player {
 
     bool is_loading() const;
 
-    // void set_played_duration(const duration &);
-    // void skip_seconds_forward(bool);
+    void set_played_duration(const duration &);
+    void skip_seconds_forward(bool);
 
     /** @brief Get next frame of loaded video
      *  @params bool paused, whether video is paused or no

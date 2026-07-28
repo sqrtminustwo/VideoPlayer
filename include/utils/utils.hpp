@@ -3,6 +3,9 @@
 
 #include "types/types.hpp"
 #include <string>
+#include <thread>
+
+void join_if_joinable(std::thread &);
 
 duration duration_diff(time_point, time_point);
 

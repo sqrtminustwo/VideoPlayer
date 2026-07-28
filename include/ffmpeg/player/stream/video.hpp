@@ -8,6 +8,8 @@ struct Video : public Stream {
 
     Video() = delete;
     Video(format_ptr);
+
+    frame_ptr make_black_frame_ptr(Resolution);
 };
 
 #endif

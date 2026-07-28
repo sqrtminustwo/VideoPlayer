@@ -95,11 +95,11 @@ void Overlay::Controller::operator()() {
     const ImRect bb(pos, ImVec2(pos.x + size.x, pos.y + size.y));
     ImGui::ItemSize(bb); // Reserves layout space horizontally
 
-    // float clicked_duration_ratio = 0.0f;
-    // if (ImGui::IsMouseClicked(0) && mouseInBound(bb.Min, bb.Max, &clicked_duration_ratio)) {
-    //     auto clicked_duration = player->get_total_duration() * clicked_duration_ratio;
-    //     player->set_played_duration(clicked_duration);
-    // }
+    float clicked_duration_ratio = 0.0f;
+    if (ImGui::IsMouseClicked(0) && mouseInBound(bb.Min, bb.Max, &clicked_duration_ratio)) {
+        auto clicked_duration = player->get_total_duration() * clicked_duration_ratio;
+        player->set_played_duration(clicked_duration);
+    }
 
     ImGui::GetWindowDrawList()->AddRectFilled(bb.Min, bb.Max, bg_col);
     auto value_pos = ImVec2(pos.x + size.x * value, bb.Max.y);

@@ -6,6 +6,10 @@
 
 using namespace std;
 
+void join_if_joinable(std::thread &thread) {
+    if (thread.joinable()) thread.join();
+}
+
 void printDebug(string msg) {
     printf("------------------------------\n");
     cout << msg << "\n";

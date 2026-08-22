@@ -48,7 +48,7 @@ AVStream *Stream::get_stream() const {
 }
 bool Stream::is_valid() const { return get_stream() != nullptr; }
 
-int Stream::init_stream(AVMediaType type, bool required) {
+int Stream::init_stream(AVMediaType type) {
     int ret;
     const AVCodec *dec;
 
@@ -56,8 +56,8 @@ int Stream::init_stream(AVMediaType type, bool required) {
 
     /* select the video stream */
     if ((ret = av_find_best_stream(fmt_ctx.get(), type, -1, -1, &dec, 0)) < 0) {
-        cout << "Cannot find a stream of type " << type_str << " in the input file\n";
-        return required ? ret : 0;
+        cout << "Cannot find stream of type " << type_str << " in the input file\n";
+        return 0;
     }
     stream_index = ret;
 

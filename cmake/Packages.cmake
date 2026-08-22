@@ -108,15 +108,15 @@ endif()
 
 include_directories("external/fonts")
 
-# # miniaudio
-#
-# set(MINIAUDIO "${EXTERNAL_DIR}/miniaudio")
-#
-# add_library(miniaudio STATIC
-#     "${MINIAUDIO}/miniaudio.c"
-# )
-# target_include_directories(miniaudio PUBLIC ${MINIAUDIO})
-#
-# target_link_libraries(miniaudio PRIVATE m pthread dl)
-#
-# target_link_libraries(${PROJECT_NAME} PUBLIC miniaudio)
+# miniaudio
+
+set(MINIAUDIO "${EXTERNAL_DIR}/miniaudio")
+
+add_library(miniaudio STATIC
+    "${MINIAUDIO}/miniaudio.c"
+)
+target_include_directories(miniaudio PUBLIC ${MINIAUDIO})
+
+target_link_libraries(miniaudio PRIVATE m pthread dl)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC miniaudio)

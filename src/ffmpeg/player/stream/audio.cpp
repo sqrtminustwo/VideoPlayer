@@ -33,6 +33,12 @@ int Audio::after_init_stream() {
         return ret;
     }
 
+    if ((ret = swr_init(swr_ctx)) < 0) {
+        printf("Failed to initialize the resampling context\n");
+        swr_free(&swr_ctx);
+        return ret;
+    }
+
     this->swr_ctx = make_swr_ptr(swr_ctx);
 
     return 0;
@@ -47,9 +53,10 @@ swr_ptr Audio::make_swr_ptr(SwrContext *swr_ctx) {
 
 void Audio::add_frame(frame_ptr frame_ptr) {
     auto resampled_frame = make_frame_ptr();
+
     resampled_frame->sample_rate = frame_ptr->sample_rate;
     resampled_frame->ch_layout = frame_ptr->ch_layout;
-    resampled_frame->format = frame_ptr->format;
+    resampled_frame->format = AV_SAMPLE_FMT_FLT;
 
     swr_convert_frame(swr_ctx.get(), resampled_frame.get(), frame_ptr.get());
     frames_queue.push_back(resampled_frame);

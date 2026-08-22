@@ -21,7 +21,7 @@ struct Stream {
     bool is_valid() const;
 
     virtual int after_init_stream();
-    int init_stream(AVMediaType, bool required);
+    int init_stream(AVMediaType);
 
     Stream() = delete;
     Stream(format_ptr);

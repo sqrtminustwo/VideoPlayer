@@ -125,7 +125,7 @@ int FFmpeg::set_video(const string &filename)
 #endif
 
 #if defined(DEBUG) || defined(__EMSCRIPTEN__)
-    LoadingMethod loading_method = FULL;
+    LoadingMethod loading_method = HALF;
     bd = new CyclicFragmentBuffer2{
         &fetcher,
         avio_ctx_buffer_size * 4,
@@ -185,15 +185,26 @@ int FFmpeg::set_video(const string &filename)
     video = make_unique<Video>(fmt_ctx);
     audio = make_unique<Audio>(fmt_ctx);
 
-    // Scope protect required
-    {
-        bool required;
-        video->init_stream(AVMEDIA_TYPE_VIDEO, required = true);
-        audio->init_stream(AVMEDIA_TYPE_AUDIO, required = false);
+    video->init_stream(AVMEDIA_TYPE_VIDEO);
+    audio->init_stream(AVMEDIA_TYPE_AUDIO);
+
+    if (!video->is_valid() && !audio->is_valid()) {
+        printf("No audio or video stream, exiting...\n");
+        return -1;
     }
 
-    time_base = av_q2d(video->get_stream()->time_base);
-    aspect_ratio = Resolution(video->dec_ctx->width, video->dec_ctx->height);
+    stream_ptr time_base_stream = nullptr;
+    if (video->is_valid()) {
+        time_base_stream = video;
+        aspect_ratio = Resolution(video->dec_ctx->width, video->dec_ctx->height);
+    } else if (audio->is_valid()) {
+        time_base_stream = audio;
+    } else {
+        printf("No audio or video stream found, exiting...\n");
+        return -1;
+    }
+
+    time_base = av_q2d(time_base_stream->get_stream()->time_base);
     total_duration = chrono::duration<float>(fmt_ctx->duration / AV_TIME_BASE);
     total_duration_str = duration_to_string(total_duration);
 

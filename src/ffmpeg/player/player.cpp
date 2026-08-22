@@ -90,7 +90,7 @@ LastFrame &Player::operator()() {
 
     played_duration = duration_diff(now, start_time);
 
-    if (!ffmpeg.video->frames_queue.empty()) {
+    if (ffmpeg.video->is_valid() && !ffmpeg.video->frames_queue.empty()) {
         auto current = ffmpeg.front_frame_timestamp_in_seconds();
         auto expected = played_duration.count();
         if (current <= expected) {

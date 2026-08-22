@@ -1,4 +1,5 @@
 #include "ffmpeg/player/stream/video.hpp"
+#include <libavutil/pixfmt.h>
 
 extern "C" {
 #include <libavutil/imgutils.h>
@@ -14,7 +15,7 @@ void Video::add_frame(frame_ptr frame_ptr) {
 
 frame_ptr Video::make_black_frame_ptr(Resolution res) {
     int ret;
-    auto pix_fmt = dec_ctx->pix_fmt;
+    auto pix_fmt = is_valid() ? dec_ctx->pix_fmt : AV_PIX_FMT_YUV420P;
     auto w = res.width;
     auto h = res.height;
     ptrdiff_t linesizes1[4];
@@ -37,7 +38,7 @@ frame_ptr Video::make_black_frame_ptr(Resolution res) {
     av_image_fill_black(
         frame->data,
         linesizes1,
-        dec_ctx->pix_fmt,
+        pix_fmt,
         AVCOL_RANGE_MPEG,
         frame->width,
         frame->height

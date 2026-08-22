@@ -5,14 +5,14 @@
  */
 
 addToLibrary({
-    $backend_api: "'http://localhost:3000'",
-    // $backend_api: "'https://moses-fishing-improving-peas.trycloudflare.com'",
+    // $backend_api: "'http://localhost:3000'",
+    $backend_api: "'https://api.blkflag.org'",
     fetchFrames__async: 'auto',
     fetchFrames__deps: ['$backend_api'],
     fetchFrames: async (offset, buffer_ptr, length) => {
-        const buf = await fetch(`${backend_api}/fragments?offset=${offset}&length=${length}`)
-            .then((r) => r.blob())
-            .then((blob) => blob.arrayBuffer());
+        const buf = await fetch(`${backend_api}/fragments?offset=${offset}&length=${length}`).then(
+            (blob) => blob.arrayBuffer()
+        );
 
         const uint8View = new Uint8Array(buf);
         HEAPU8.set(uint8View, buffer_ptr);

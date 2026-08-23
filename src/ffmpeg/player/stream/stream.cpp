@@ -1,4 +1,5 @@
 #include "ffmpeg/player/stream/stream.hpp"
+#include "types/frame/frame_ptr.hpp" // IWYU pragma: keep
 #include "types/types.hpp"
 #include <iostream>
 
@@ -8,14 +9,6 @@ extern "C" {
 }
 
 using namespace std;
-
-frame_ptr Stream::make_frame_ptr(extra_frame_free extra_free) {
-    return frame_ptr(av_frame_alloc(), [extra_free](AVFrame *f) {
-        if (!f) return;
-        extra_free(f);
-        av_frame_free(&f);
-    });
-}
 
 Stream::Stream(::format_ptr fmt_ctx) : fmt_ctx{fmt_ctx} {}
 

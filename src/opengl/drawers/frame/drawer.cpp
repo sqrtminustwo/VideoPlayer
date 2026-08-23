@@ -60,10 +60,9 @@ void Frame::Drawer::operator()(LastFrame &last_frame) {
 
     // This is not needed since we only use 1 shader
     // shader->use();
-    auto frame = last_frame.get();
-    auto res = Resolution{frame->width, frame->height};
+    auto res = Resolution{last_frame->width, last_frame->height};
 
-    send_texture(res, frame, [](Resolution &&res, uint8_t *data, int i) {
+    send_texture(res, last_frame, [](Resolution &&res, uint8_t *data, int i) {
         glTexSubImage2D(
             GL_TEXTURE_2D,
             0,

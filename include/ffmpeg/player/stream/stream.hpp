@@ -4,14 +4,10 @@
 #include "ffmpeg/fetcher/js_fetcher.hpp"
 #include "utils/guarded_que.hpp"
 #include "types/types.hpp"
-#include <functional>
 
 extern "C" {
 #include <libavutil/avutil.h>
 }
-
-using frame_que = std::deque<frame_ptr>;
-using extra_frame_free = std::function<void(AVFrame *)>;
 
 struct Stream {
     decoder_ptr dec_ctx = make_decoder_ptr();
@@ -35,7 +31,7 @@ struct Stream {
 
     int seek_ts(const double &);
 
-    static frame_ptr make_frame_ptr(extra_frame_free = [](AVFrame *) {});
+    // static frame_ptr make_frame_ptr(extra_frame_free = [](AVframe_ptr *) {});
 
   protected:
     format_ptr fmt_ctx;

@@ -1,5 +1,5 @@
 #include "ffmpeg/player/stream/video.hpp"
-#include <libavutil/pixfmt.h>
+#include "types/frame/frame_ptr.hpp"
 
 extern "C" {
 #include <libavutil/imgutils.h>
@@ -21,10 +21,10 @@ frame_ptr Video::make_black_frame_ptr(Resolution res) {
     ptrdiff_t linesizes1[4];
     int linesizes[4];
 
-    frame_ptr frame = make_frame_ptr([](AVFrame *f) {
+    frame_ptr frame{[](AVFrame *f) {
         if (!f->data[0]) return;
         av_freep(&f->data[0]);
-    });
+    }};
     frame->width = w;
     frame->height = h;
     frame->format = pix_fmt;

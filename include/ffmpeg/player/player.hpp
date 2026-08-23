@@ -5,7 +5,7 @@
 #include <mutex>
 #include <thread>
 
-#include "ffmpeg/player/last_frame.hpp"
+#include "types/frame/last_frame.hpp"
 #include "ffmpeg/player/pause.hpp"
 #include "ffmpeg/player/ffmpeg.hpp"
 #include "types/types.hpp"
@@ -56,7 +56,7 @@ class Player {
     /** @brief Get next frame of loaded video
      *  @params bool paused, whether video is paused or no
      *  @throws if no video loaded
-     *  @return AVFrame* if video ended null_ptr
+     *  @return AVframe_ptr* if video ended null_ptr
      */
     LastFrame &operator()();
 

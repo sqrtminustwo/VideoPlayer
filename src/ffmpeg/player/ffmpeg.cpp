@@ -1,5 +1,6 @@
 #include "ffmpeg/player/ffmpeg.hpp"
 #include "ffmpeg/player/stream/audio.hpp"
+#include "types/frame/frame_ptr.hpp"
 #include "ffmpeg/player/stream/video.hpp"
 #include "types/types.hpp"
 #include "utils/guards/atomic_boolean_guard.hpp"
@@ -188,11 +189,6 @@ int FFmpeg::set_video(const string &filename)
     video->init_stream(AVMEDIA_TYPE_VIDEO);
     audio->init_stream(AVMEDIA_TYPE_AUDIO);
 
-    if (!video->is_valid() && !audio->is_valid()) {
-        printf("No audio or video stream, exiting...\n");
-        return -1;
-    }
-
     stream_ptr time_base_stream = nullptr;
     if (video->is_valid()) {
         time_base_stream = video;
@@ -216,8 +212,8 @@ int FFmpeg::set_video(const string &filename)
 
 double FFmpeg::front_frame_timestamp_in_seconds() const {
     auto front_frame = video->frames_queue.get_front();
-    if (front_frame == nullptr) return -1;
-    return ((double)front_frame->pts) * time_base;
+    if (front_frame.get() == nullptr) return -1;
+    return ((double)front_frame.get()->pts) * time_base;
 }
 
 LoadStatus FFmpeg::get_load_status() const { return load_status.load(memory_order_acquire); }
@@ -274,13 +270,13 @@ LoadStatus FFmpeg::send_packet() {
         /*
          * Allocates new frame each time
          */
-        auto frame_ptr = Stream::make_frame_ptr();
+        frame_ptr frame_ptr{};
         ret = avcodec_receive_frame(dec_ctx_ptr, frame_ptr.get());
 
         if (ret == AVERROR(EAGAIN)) break;
         else if (ret < 0) RETURN;
 
-        stream->add_frame(std::move(frame_ptr));
+        stream->add_frame(frame_ptr);
         load_status = on_load;
     }
 
@@ -306,6 +302,13 @@ void FFmpeg::loader_thread_loop() {
     LoadStatus status;
     bool should_stop = false;
 
+    auto load_stream = [&status, this](stream_ptr stream) {
+        status = NEED_MORE_PACKETS;
+        while (stream->frames_queue.size() < stream->frames_queue_size_bound &&
+               (status != END && status != ERROR))
+            status = send_packet();
+    };
+
     while (should_load.load(memory_order_acquire)) {
         should_stop = pause_loader.should_pause.load(memory_order_acquire);
         if (should_stop) {
@@ -314,10 +317,10 @@ void FFmpeg::loader_thread_loop() {
             pause_loader.should_pause.wait(should_stop, memory_order_relaxed);
         }
 
-        status = NEED_MORE_PACKETS;
-        while (video->frames_queue.size() < video->frames_queue_size_bound &&
-               (status != END && status != ERROR))
-            status = send_packet();
+        load_stream(video);
+        // Causes double loads on no audio
+        // not good like this alone
+        // load_stream(audio);
 
         video->frames_queue.wait_for_size_change();
     }

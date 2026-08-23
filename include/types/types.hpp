@@ -24,13 +24,12 @@ class OpenGL;
 }
 class Player;
 class Stream;
+class frame_ptr;
 
 using textures_t = std::array<unsigned int *, 3>;
 
 using opengl_context = std::shared_ptr<Context::OpenGL>;
 using player_ptr = std::shared_ptr<Player>;
-using frame_ptr = std::shared_ptr<AVFrame>;
-// frame_ptr make_frame_ptr();
 using stream_ptr = std::shared_ptr<Stream>;
 using format_ptr = std::shared_ptr<AVFormatContext>;
 using decoder_ptr = std::unique_ptr<AVCodecContext, void (*)(AVCodecContext *)>;

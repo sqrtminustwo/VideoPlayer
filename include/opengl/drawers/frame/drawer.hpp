@@ -1,7 +1,7 @@
 #ifndef FRAME_DRAWER_H
 #define FRAME_DRAWER_H
 
-#include "ffmpeg/player/last_frame.hpp"
+#include "types/frame/last_frame.hpp"
 #include "opengl/context/context.hpp"
 #include "opengl/shaders/texture_shader.hpp"
 #include "types/constants.hpp"

@@ -3,8 +3,6 @@
 #include "ffmpeg/player/stream/video.hpp"
 #include "types/types.hpp"
 #include "utils/utils.hpp"
-#include <libavutil/avutil.h>
-#include <memory>
 #include "types/constants.hpp"
 
 extern "C" {
@@ -46,7 +44,10 @@ int Player::set_video(const string &filename)
 
     state = VIDEO_SET_NOT_PLAYED;
 
-    last_frame.set(
+    // last_frame.set(std::move(
+    //     std::static_pointer_cast<Video>(ffmpeg.video)->make_black_frame_ptr(ffmpeg.aspect_ratio)
+    // ));
+    last_frame = std::move(
         std::static_pointer_cast<Video>(ffmpeg.video)->make_black_frame_ptr(ffmpeg.aspect_ratio)
     );
 
@@ -94,7 +95,8 @@ LastFrame &Player::operator()() {
         auto current = ffmpeg.front_frame_timestamp_in_seconds();
         auto expected = played_duration.count();
         if (current <= expected) {
-            this->last_frame.set(ffmpeg.video->frames_queue.front());
+            // this->last_frame.set(std::move(ffmpeg.video->frames_queue.front()));
+            this->last_frame = std::move(ffmpeg.video->frames_queue.front());
             ffmpeg.video->frames_queue.pop_front();
         }
     }

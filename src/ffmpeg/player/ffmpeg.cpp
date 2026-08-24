@@ -211,7 +211,7 @@ int FFmpeg::set_video(const string &filename)
 }
 
 double FFmpeg::front_frame_timestamp_in_seconds() const {
-    auto front_frame = video->frames_queue.get_front();
+    auto front_frame = video->frames_queue.front();
     if (front_frame.get() == nullptr) return -1;
     return ((double)front_frame.get()->pts) * time_base;
 }

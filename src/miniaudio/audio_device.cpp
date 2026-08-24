@@ -1,6 +1,7 @@
 #include "miniaudio/audio_device.hpp"
 #include "ffmpeg/player/player.hpp" // IWYU pragma: keep
 #include "utils/guarded_que.hpp"
+#include <cstdint>
 #include <cstring>
 
 #define MINIAUDIO_IMPLEMENTATION
@@ -12,29 +13,33 @@ extern "C" {
 #include <libavutil/file.h>
 }
 
+#define frame_s (*frame)
+constexpr auto f = sizeof(float);
+
 void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount) {
     auto queue = reinterpret_cast<GuardedQue<frame_ptr> *>(pDevice->pUserData);
-    auto frame = queue->get_front();
 
-    if (frame == nullptr) {
-        printf("need audio frame but none present\n");
-        return;
+    uint8_t *pOutputReal = static_cast<uint8_t *>(pOutput);
+    int filled_size = 0;
+
+    while (filled_size < frameCount) {
+        auto frame = queue->front_ptr();
+        if (frame == nullptr) return;
+
+        int remaining_size = frame_s->nb_samples - frame->offset;
+        int framesToCopy = std::min(remaining_size, (int)frameCount - filled_size);
+
+        auto channels_size = frame_s->ch_layout.nb_channels * f;
+        auto start = frame_s.offset * channels_size;
+        size_t bytesToCopy = framesToCopy * channels_size;
+
+        memcpy(pOutputReal, frame_s->data[0] + start, bytesToCopy);
+        pOutputReal += bytesToCopy;
+        filled_size += framesToCopy;
+
+        if (framesToCopy < remaining_size) frame->offset += framesToCopy;
+        else queue->pop_front();
     }
-
-    int channels = frame->ch_layout.nb_channels;
-    int framesToCopy = std::min(frame->nb_samples, (int)frameCount);
-    size_t bytesToCopy = framesToCopy * channels * sizeof(float);
-    memcpy(pOutput, frame->data[0], bytesToCopy);
-
-    // if (framesToCopy < frame->nb_samples) {
-    //     int remaining_frames = frame->nb_samples - framesToCopy;
-    //     size_t remaining_bytes = remaining_frames * channels * sizeof(float);
-    //     memmove(frame->data[0], frame->data[0] + bytesToCopy, remaining_bytes);
-    //     frame->nb_samples = remaining_frames;
-    // } else {
-    //     queue->pop_front();
-    // }
-    queue->pop_front();
 }
 
 AudioDevice::AudioDevice(player_ptr player) : player{player} {

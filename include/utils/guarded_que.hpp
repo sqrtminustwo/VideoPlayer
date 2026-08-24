@@ -46,10 +46,10 @@ template <typename T> class GuardedQue {
         return queue.front();
     }
 
-    T get_front() {
+    T *front_ptr() {
         LOCK_QUE;
         if (queue.empty()) return nullptr;
-        return queue.front();
+        return &queue.front();
     }
 
     void pop_front() {

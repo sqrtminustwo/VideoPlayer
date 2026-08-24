@@ -1,6 +1,5 @@
 #include "ffmpeg/player/stream/stream.hpp"
 #include "types/frame/frame_ptr.hpp" // IWYU pragma: keep
-#include "types/types.hpp"
 #include <iostream>
 
 extern "C" {

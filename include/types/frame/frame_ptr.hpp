@@ -11,6 +11,8 @@ class frame_ptr {
     std::shared_ptr<AVFrame> frame;
 
   public:
+    int offset = 0;
+
     frame_ptr(extra_frame_free extra_free = [](AVFrame *) {});
     frame_ptr(std::nullptr_t) noexcept;
 

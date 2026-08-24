@@ -4,7 +4,7 @@
 #include "ffmpeg/player/stream/stream.hpp"
 
 struct Audio : public Stream {
-    void add_frame(frame_ptr frame) override;
+    void add_frame(frame_ptr &&frame) override;
 
     Audio() = delete;
     Audio(format_ptr);

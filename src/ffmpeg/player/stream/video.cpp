@@ -9,8 +9,8 @@ extern "C" {
 
 Video::Video(format_ptr f) : Stream{f} {}
 
-void Video::add_frame(frame_ptr frame_ptr) {
-    if (frame_ptr->width > 0 && frame_ptr->height > 0) frames_queue.push_back(frame_ptr);
+void Video::add_frame(frame_ptr &&frame_ptr) {
+    if (frame_ptr->width > 0 && frame_ptr->height > 0) frames_queue.push_back(std::move(frame_ptr));
 }
 
 frame_ptr Video::make_black_frame_ptr(Resolution res) {

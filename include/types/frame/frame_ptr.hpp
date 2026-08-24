@@ -17,8 +17,8 @@ class frame_ptr {
     frame_ptr(std::nullptr_t) noexcept;
 
     ~frame_ptr() = default;
-    // frame_ptr(const frame_ptr &) = delete;
-    frame_ptr(const frame_ptr &) = default;
+    frame_ptr(const frame_ptr &) = delete;
+    // frame_ptr(const frame_ptr &) = default;
     frame_ptr &operator=(const frame_ptr &) = default;
     frame_ptr(frame_ptr &&) = default;
     frame_ptr &operator=(frame_ptr &&) = default;

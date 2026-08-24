@@ -30,9 +30,9 @@ template <typename T> class GuardedQue {
         return queue.size();
     }
 
-    void push_back(T e) {
+    void push_back(T &&e) {
         LOCK_QUE;
-        queue.push_back(e);
+        queue.push_back(std::move(e));
     }
 
     void clear() {

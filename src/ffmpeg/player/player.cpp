@@ -95,7 +95,7 @@ LastFrame &Player::operator()() {
         auto current = ffmpeg.front_frame_timestamp_in_seconds();
         auto expected = played_duration.count();
         if (current <= expected) {
-            // this->last_frame.set(std::move(ffmpeg.video->frames_queue.front()));
+            // this->last_frame = std::move(ffmpeg.video->frames_queue.front_and_pop());
             this->last_frame = std::move(ffmpeg.video->frames_queue.front());
             ffmpeg.video->frames_queue.pop_front();
         }

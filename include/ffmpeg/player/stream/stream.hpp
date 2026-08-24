@@ -26,7 +26,7 @@ struct Stream {
     static const int frames_queue_size_bound = 10;
     GuardedQue<frame_ptr> frames_queue{frames_queue_size_bound / 2};
 
-    virtual void add_frame(frame_ptr frame) = 0;
+    virtual void add_frame(frame_ptr &&frame) = 0;
     void frames_queue_operation();
 
     int seek_ts(const double &);

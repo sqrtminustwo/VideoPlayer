@@ -54,7 +54,7 @@ swr_ptr Audio::make_swr_ptr(SwrContext *swr_ctx) {
     });
 }
 
-void Audio::add_frame(frame_ptr frame_ptr) {
+void Audio::add_frame(frame_ptr &&frame_ptr) {
     class frame_ptr resampled_frame {};
 
     resampled_frame->sample_rate = frame_ptr->sample_rate;
@@ -62,5 +62,5 @@ void Audio::add_frame(frame_ptr frame_ptr) {
     resampled_frame->format = format;
 
     swr_convert_frame(swr_ctx.get(), resampled_frame.get(), frame_ptr.get());
-    frames_queue.push_back(resampled_frame);
+    frames_queue.push_back(std::move(resampled_frame));
 }

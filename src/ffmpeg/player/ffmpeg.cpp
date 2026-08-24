@@ -211,9 +211,9 @@ int FFmpeg::set_video(const string &filename)
 }
 
 double FFmpeg::front_frame_timestamp_in_seconds() const {
-    auto front_frame = video->frames_queue.front();
-    if (front_frame.get() == nullptr) return -1;
-    return ((double)front_frame.get()->pts) * time_base;
+    auto front_frame = video->frames_queue.front_ptr();
+    if ((*front_frame).get() == nullptr) return -1;
+    return ((double)(*front_frame).get()->pts) * time_base;
 }
 
 LoadStatus FFmpeg::get_load_status() const { return load_status.load(memory_order_acquire); }
@@ -276,7 +276,7 @@ LoadStatus FFmpeg::send_packet() {
         if (ret == AVERROR(EAGAIN)) break;
         else if (ret < 0) RETURN;
 
-        stream->add_frame(frame_ptr);
+        stream->add_frame(std::move(frame_ptr));
         load_status = on_load;
     }
 

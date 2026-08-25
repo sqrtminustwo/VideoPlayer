@@ -9,7 +9,6 @@
 #include "ffmpeg/player/pause.hpp"
 #include "ffmpeg/player/ffmpeg.hpp"
 #include "types/types.hpp"
-#include "ffmpeg/fetcher/js_fetcher.hpp"
 
 enum VideoPlayerState { VIDEO_NOT_SET, VIDEO_SET_NOT_PLAYED, VIDEO_PLAYING, LOADING };
 
@@ -49,6 +48,7 @@ class Player {
 #endif
 
     bool is_loading() const;
+    bool is_stalled() const;
 
     void set_played_duration(const duration &);
     void skip_seconds_forward(bool);

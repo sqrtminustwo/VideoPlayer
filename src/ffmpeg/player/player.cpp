@@ -24,6 +24,16 @@ duration Player::get_total_duration() const { return ffmpeg.total_duration; }
 string Player::get_total_duration_str() const { return ffmpeg.total_duration_str; }
 
 bool Player::is_loading() const { return state == LOADING; }
+bool Player::is_stalled() const {
+    // is_loading() should be first
+    // state cant be accessed cause of multiple states
+    if (is_loading()) return true;
+    if (state == VIDEO_NOT_SET) {
+        fprintf(stderr, "No video set, can't play!");
+        return true;
+    }
+    return pause.paused_now();
+}
 
 stream_ptr Player::get_audio_stream() const { return ffmpeg.audio; }
 stream_ptr Player::get_video_stream() const { return ffmpeg.video; };
@@ -55,18 +65,10 @@ int Player::set_video(const string &filename)
 }
 
 LastFrame &Player::operator()() {
-    // no locks / mutexes needed below as state is atomic
-    // // and no action will be done until skipping thread is working
-    if (is_loading()) return last_frame;
-
-    if (state == VIDEO_NOT_SET) {
-        fprintf(stderr, "No video set, can't play!");
-        return last_frame;
-    }
-
     // There is always a last frame is video is set
     // either black or previous frame
-    if (pause.paused_now()) return last_frame;
+    if (is_stalled()) return last_frame;
+
     if (aprox_played_duration(ffmpeg.total_duration)) {
         played_duration = ffmpeg.total_duration;
         return last_frame;
@@ -92,7 +94,7 @@ LastFrame &Player::operator()() {
     played_duration = duration_diff(now, start_time);
 
     if (ffmpeg.video->is_valid() && !ffmpeg.video->frames_queue.empty()) {
-        auto current = ffmpeg.front_frame_timestamp_in_seconds();
+        auto current = ffmpeg.front_frame_timestamp_in_seconds(ffmpeg.video);
         auto expected = played_duration.count();
         if (current <= expected) {
             // this->last_frame = std::move(ffmpeg.video->frames_queue.front_and_pop());
@@ -153,11 +155,12 @@ void Player::set_played_duration(const duration &new_played_duration) {
         auto stop = 1e-5;
 
         ffmpeg.video->frames_queue.clear();
+        ffmpeg.audio->frames_queue.clear();
         while (true) {
             if (ffmpeg.video->seek_ts(seeked) < 0) return;
             if (ffmpeg.video->frames_queue.empty()) ffmpeg.skip_frames();
 
-            if (ffmpeg.front_frame_timestamp_in_seconds() <= duration_count) break;
+            if (ffmpeg.front_frame_timestamp_in_seconds(ffmpeg.video) <= duration_count) break;
 
             // Should be after skipping otherwise
             // you wont be able to set time 0
@@ -176,7 +179,7 @@ void Player::set_played_duration(const duration &new_played_duration) {
 
         auto status = LOADED_VIDEO;
         while (ffmpeg.is_loaded(status) &&
-               ffmpeg.front_frame_timestamp_in_seconds() < duration_count)
+               ffmpeg.front_frame_timestamp_in_seconds(ffmpeg.video) < duration_count)
             status = ffmpeg.skip_frames();
 
         if (is_loading()) {

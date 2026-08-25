@@ -12,14 +12,7 @@
 #include <memory>
 
 #if defined(DEBUG) || defined(__EMSCRIPTEN__)
-
-#include "buffer/cfb2.hpp"
 #include "buffer/seq_guard.hpp"
-
-#else
-
-#include "buffer/default_buffer.hpp"
-
 #endif
 
 extern "C" {
@@ -167,8 +160,8 @@ int FFmpeg::set_video(const string &filename) {
     return 0;
 }
 
-double FFmpeg::front_frame_timestamp_in_seconds() const {
-    auto front_frame = video->frames_queue.front_ptr();
+double FFmpeg::front_frame_timestamp_in_seconds(stream_ptr &stream) const {
+    auto front_frame = stream->frames_queue.front_ptr();
     if ((*front_frame).get() == nullptr) return -1;
     return ((double)(*front_frame).get()->pts) * time_base;
 }

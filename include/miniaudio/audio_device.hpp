@@ -5,8 +5,6 @@
 #include "miniaudio.h"
 
 class AudioDevice {
-    player_ptr player;
-
     ma_device_config deviceConfig;
     ma_device device;
 

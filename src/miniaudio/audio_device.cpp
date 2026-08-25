@@ -17,7 +17,9 @@ extern "C" {
 constexpr auto f = sizeof(float);
 
 void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount) {
-    auto queue = reinterpret_cast<GuardedQue<frame_ptr> *>(pDevice->pUserData);
+    auto player = reinterpret_cast<Player *>(pDevice->pUserData);
+    if (player->is_stalled()) return;
+    auto queue = &player->get_audio_stream()->frames_queue;
 
     uint8_t *pOutputReal = static_cast<uint8_t *>(pOutput);
     int filled_size = 0;
@@ -42,7 +44,7 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
     }
 }
 
-AudioDevice::AudioDevice(player_ptr player) : player{player} {
+AudioDevice::AudioDevice(player_ptr player) {
     if (!player->get_audio_stream()->is_valid()) {
         printf("Can't initialize audio device if there is no audio stream!\n");
         return;
@@ -55,7 +57,7 @@ AudioDevice::AudioDevice(player_ptr player) : player{player} {
     deviceConfig.playback.channels = codecpar->ch_layout.nb_channels;
     deviceConfig.sampleRate = codecpar->sample_rate;
     deviceConfig.dataCallback = data_callback;
-    deviceConfig.pUserData = &player->get_audio_stream()->frames_queue;
+    deviceConfig.pUserData = player.get();
 
     if (ma_device_init(NULL, &deviceConfig, &device) != MA_SUCCESS) {
         printf("Failed to open audio playback device.\n");

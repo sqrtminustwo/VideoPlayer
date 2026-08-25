@@ -40,21 +40,6 @@ FFmpeg::~FFmpeg() {
     for (auto &stream : {audio, video})
         if (stream.get()) stream->frames_queue.stop_waiting();
     join_if_joinable(loader_thread);
-
-#ifndef __EMSCRIPTEN__
-    uint8_t *base;
-    size_t total_size;
-
-#ifdef DEBUG
-    base = fetcher.file;
-    total_size = fetcher.file_size;
-#else
-    base = fetcher.bd->get_base();
-    total_size = fetcher.bd->get_total_size();
-#endif
-    av_file_unmap(base, total_size - fetcher.bd->get_offset());
-
-#endif
 }
 
 format_ptr FFmpeg::make_format_ptr() {

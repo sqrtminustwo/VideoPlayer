@@ -1,4 +1,4 @@
-#include "ffmpeg/platform/make_fetcher.hpp"
+#include "ffmpeg/platform/make_fetcher.hpp" // IWYU pragma: keep
 #include "ffmpeg/fetcher/file_fetcher.hpp"
 #include "types/types.hpp"
 #include <memory>

@@ -18,7 +18,7 @@ void init_cyclic_buf(fetcher_ptr &fetcher, size_t avio_ctx_buffer_size) {
     );
 }
 
-fetcher_ptr &&make_fetcher(const std::string &filename, size_t avio_ctx_buffer_size) {
+fetcher_ptr make_fetcher(const std::string &filename, size_t avio_ctx_buffer_size) {
 #ifdef __EMSCRIPTEN__
     return make_fetcher_emscripten(avio_ctx_buffer_size);
 #else

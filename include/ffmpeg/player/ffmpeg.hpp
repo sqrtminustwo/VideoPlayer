@@ -1,9 +1,6 @@
 #ifndef FFMPEG_META_H
 #define FFMPEG_META_H
 
-#include "buffer/buffer.hpp"
-#include "ffmpeg/fetcher/file_fetcher.hpp"
-#include "ffmpeg/fetcher/js_fetcher.hpp"
 #include "types/types.hpp"
 #include "ffmpeg/player/stream/stream.hpp" // IWYU pragma: keep
 #include "utils/guards/atomic_boolean_guard.hpp"
@@ -18,13 +15,7 @@ struct PauseThread {
 };
 
 class FFmpeg {
-#ifdef __EMSCRIPTEN__
-    JSFetcher fetcher{};
-#else
-    FileFetcher fetcher{};
-#endif
-
-    // Buffer *bd;
+    fetcher_ptr fetcher = nullptr;
 
     std::atomic<LoadStatus> load_status = NEED_MORE_PACKETS;
     packet_ptr packet = make_packet_ptr();
@@ -53,11 +44,7 @@ class FFmpeg {
     std::string total_duration_str;
     duration total_duration;
 
-#ifdef __EMSCRIPTEN__
-    int set_video();
-#else
-    int set_video(const std::string &filename);
-#endif
+    int set_video(const std::string &filename = nullptr);
 
     AtomicBooleanGuard get_should_pause_guard();
     void wait_until_loader_thread_paused();

@@ -1,4 +1,5 @@
 #include "ffmpeg/player/ffmpeg.hpp"
+#include "ffmpeg/platform/make_fetcher.hpp"
 #include "ffmpeg/player/stream/audio.hpp"
 #include "types/frame/frame_ptr.hpp"
 #include "ffmpeg/player/stream/video.hpp"
@@ -86,48 +87,19 @@ static int64_t seek(void *opaque, int64_t offset, int whence) {
 // https://www.ffmpeg.org/doxygen/2.3/avio_reading_8c-example.html#_a10
 // https://www.ffmpeg.org/doxygen/2.3/aviobuf_8c_source.html#l00200
 
-#ifdef __EMSCRIPTEN__
-int FFmpeg::set_video()
-#else
-int FFmpeg::set_video(const string &filename)
-#endif
-{
+int FFmpeg::set_video(const string &filename) {
     int ret;
 
-#ifndef __EMSCRIPTEN__
-    uint8_t *buffer = NULL;
-    size_t buffer_size;
-
-    /* slurp file content into buffer */
-    ret = av_file_map(filename.c_str(), &buffer, &buffer_size, 0, NULL);
-    if (ret < 0) {
-        printf("Failed to open file!\n");
-        return -1;
-    }
-#ifdef DEBUG
-    fetcher.file = buffer;
-    fetcher.file_size = buffer_size;
-#endif
-#endif
-
+    fetcher = make_fetcher(filename, avio_ctx_buffer_size);
 #if defined(DEBUG) || defined(__EMSCRIPTEN__)
-    LoadingMethod loading_method = HALF;
-    fetcher.bd = make_unique<CyclicFragmentBuffer2>(
-        &fetcher,
-        avio_ctx_buffer_size * 4,
-        avio_ctx_buffer_size * 3,
-        avio_ctx_buffer_size,
-        loading_method
-    );
-
-    // Even tho this normally needed only in avformat_open_input
-    // To save preprocessor commands it can be placed here
-    SeqGuard guard{dynamic_cast<CyclicFragmentBuffer2 *>(fetcher.bd.get()), FULL};
-#else
-    fetcher.bd = make_unique<DefaultBuffer>();
-
-    fetcher.bd->set_base(buffer);
-    fetcher.bd->set_total_size(buffer_size);
+    /*
+     * On call to avformat_open_input ffmpeg will make
+     * 2 small loads in start and end of file
+     * to determine type etc..., preloading is not
+     * needed for these 2 loads, below guard sets
+     * load mode to SEQ until destruction
+     */
+    SeqGuard guard{dynamic_cast<CyclicFragmentBuffer2 *>(fetcher->bd.get()), FULL};
 #endif
 
     AVIOContext *avio_ctx = NULL;
@@ -143,7 +115,7 @@ int FFmpeg::set_video(const string &filename)
         avio_ctx_buffer,
         avio_ctx_buffer_size,
         0,
-        fetcher.bd.get(),
+        fetcher->bd.get(),
         &Buffer::avio_read_packet,
         NULL,
         &seek

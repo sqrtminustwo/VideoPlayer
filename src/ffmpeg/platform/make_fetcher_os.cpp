@@ -1,4 +1,4 @@
-#include "ffmpeg/platform/make_fetcher.hpp" // IWYU pragma: keep
+#include "ffmpeg/platform/make_fetcher.hpp"
 #include "ffmpeg/fetcher/file_fetcher.hpp"
 #include "types/types.hpp"
 #include <memory>
@@ -11,7 +11,7 @@ extern "C" {
 #include "buffer/default_buffer.hpp"
 #endif
 
-fetcher_ptr &&make_fetcher_os(const std::string filename, size_t avio_ctx_buffer_size) {
+fetcher_ptr make_fetcher_os(const std::string &filename, size_t avio_ctx_buffer_size) {
     int ret;
     uint8_t *buffer = NULL;
     size_t buffer_size;
@@ -39,5 +39,5 @@ fetcher_ptr &&make_fetcher_os(const std::string filename, size_t avio_ctx_buffer
     fetcher->bd->set_total_size(buffer_size);
 #endif
 
-    return std::move(fetcher);
+    return fetcher;
 }

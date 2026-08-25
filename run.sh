@@ -4,10 +4,11 @@ if [ "$#" -ge 1 ]; then
     video=$1
 fi
 
-preset="clang-debug"
-# preset="release"
+# preset="clang-debug"
+preset="release"
 
 cmake --preset "$preset"
 cmake --build "build/$preset"
 
-./build/clang-debug/WebScreenShare $video
+# ./build/clang-debug/WebScreenShare $video
+./build/release/WebScreenShare $video

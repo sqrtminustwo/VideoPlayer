@@ -7,7 +7,7 @@
 #include <cstddef>
 
 struct FileFetcher : public DataFetcher {
-    uint8_t *file;
+    uint8_t *file = nullptr;
     size_t file_size;
 
     int getTotalSizeLocal() override;

@@ -23,7 +23,8 @@ class FFmpeg {
 #else
     FileFetcher fetcher{};
 #endif
-    Buffer *bd;
+
+    // Buffer *bd;
 
     std::atomic<LoadStatus> load_status = NEED_MORE_PACKETS;
     packet_ptr packet = make_packet_ptr();

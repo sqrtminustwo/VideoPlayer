@@ -1,6 +1,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include "fetcher/data_fetcher.hpp"
 #include <array>
 #include <memory>
 #include <chrono>
@@ -25,6 +26,7 @@ class OpenGL;
 class Player;
 class Stream;
 class frame_ptr;
+class DataFetcher;
 
 using textures_t = std::array<unsigned int *, 3>;
 
@@ -44,6 +46,7 @@ using ach = Overlay::AnimatedComponentsHandle &;
 
 using time_point = std::chrono::system_clock::time_point;
 using duration = std::chrono::duration<float>;
+using fetcher_ptr = std::unique_ptr<DataFetcher>;
 
 struct Resolution {
     int width;

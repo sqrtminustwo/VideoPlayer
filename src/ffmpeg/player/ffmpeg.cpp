@@ -8,6 +8,7 @@
 #include "utils/utils.hpp"
 #include <atomic>
 #include <libavutil/error.h>
+#include <memory>
 
 #if defined(DEBUG) || defined(__EMSCRIPTEN__)
 
@@ -48,13 +49,12 @@ FFmpeg::~FFmpeg() {
     base = fetcher.file;
     total_size = fetcher.file_size;
 #else
-    base = bd->get_base();
-    total_size = bd->get_total_size();
+    base = fetcher.bd->get_base();
+    total_size = fetcher.bd->get_total_size();
 #endif
+    av_file_unmap(base, total_size - fetcher.bd->get_offset());
 
-    av_file_unmap(base, total_size - bd->get_offset());
 #endif
-    delete bd;
 }
 
 format_ptr FFmpeg::make_format_ptr() {
@@ -127,22 +127,22 @@ int FFmpeg::set_video(const string &filename)
 
 #if defined(DEBUG) || defined(__EMSCRIPTEN__)
     LoadingMethod loading_method = HALF;
-    bd = new CyclicFragmentBuffer2{
+    fetcher.bd = make_unique<CyclicFragmentBuffer2>(
         &fetcher,
         avio_ctx_buffer_size * 4,
         avio_ctx_buffer_size * 3,
         avio_ctx_buffer_size,
         loading_method
-    };
+    );
 
     // Even tho this normally needed only in avformat_open_input
     // To save preprocessor commands it can be placed here
-    SeqGuard guard{dynamic_cast<CyclicFragmentBuffer2 *>(bd), FULL};
+    SeqGuard guard{dynamic_cast<CyclicFragmentBuffer2 *>(fetcher.bd.get()), FULL};
 #else
-    bd = new DefaultBuffer();
+    fetcher.bd = make_unique<DefaultBuffer>();
 
-    bd->set_base(buffer);
-    bd->set_total_size(buffer_size);
+    fetcher.bd->set_base(buffer);
+    fetcher.bd->set_total_size(buffer_size);
 #endif
 
     AVIOContext *avio_ctx = NULL;
@@ -158,7 +158,7 @@ int FFmpeg::set_video(const string &filename)
         avio_ctx_buffer,
         avio_ctx_buffer_size,
         0,
-        bd,
+        fetcher.bd.get(),
         &Buffer::avio_read_packet,
         NULL,
         &seek

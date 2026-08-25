@@ -1,4 +1,3 @@
-#ifdef __EMSCRIPTEN__
 #ifndef JS_FETCHER_H
 #define JS_FETCHER_H
 
@@ -9,5 +8,4 @@ struct JSFetcher : public DataFetcher {
     void fetchFramesLocal(int_type offset, uint8_t *buf, int_type length) override;
 };
 
-#endif
 #endif

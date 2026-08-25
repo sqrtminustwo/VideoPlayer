@@ -5,8 +5,8 @@
  */
 
 addToLibrary({
-    // $backend_api: "'http://localhost:3000'",
-    $backend_api: "'https://api.blkflag.org'",
+    $backend_api: "'http://localhost:3000'",
+    // $backend_api: "'https://api.blkflag.org'",
     fetchFrames__async: 'auto',
     fetchFrames__deps: ['$backend_api'],
     fetchFrames: async (offset, buffer_ptr, length) => {

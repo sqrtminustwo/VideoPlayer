@@ -1,7 +1,6 @@
 #ifndef STREAM_META_H
 #define STREAM_META_H
 
-#include "ffmpeg/fetcher/js_fetcher.hpp"
 #include "utils/guarded_que.hpp"
 #include "types/types.hpp"
 
@@ -29,9 +28,7 @@ struct Stream {
     virtual void add_frame(frame_ptr &&frame) = 0;
     void frames_queue_operation();
 
-    int seek_ts(const double &);
-
-    // static frame_ptr make_frame_ptr(extra_frame_free = [](AVframe_ptr *) {});
+    void flush_buffers();
 
   protected:
     format_ptr fmt_ctx;

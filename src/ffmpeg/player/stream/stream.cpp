@@ -11,19 +11,7 @@ using namespace std;
 
 Stream::Stream(::format_ptr fmt_ctx) : fmt_ctx{fmt_ctx} {}
 
-int Stream::seek_ts(const double &duration_count) {
-    auto time_base = av_q2d(get_stream()->time_base);
-    auto ts = static_cast<int64_t>(duration_count / time_base);
-
-    // https://stackoverflow.com/questions/21475397/cannot-get-first-frames-using-avformat-seek-file
-    // avformat_seek_file(fmt_ctx.get(), stream_index, 0, ts, ts, AVSEEK_FLAG_BACKWARD);
-    int ret = av_seek_frame(fmt_ctx.get(), stream_index, ts, AVSEEK_FLAG_BACKWARD);
-
-    // https://ffmpeg.org/doxygen/trunk/group__lavc__misc.html#gaf60b0e076f822abcb2700eb601d352a6
-    avcodec_flush_buffers(dec_ctx.get());
-
-    return ret;
-}
+void Stream::flush_buffers() { avcodec_flush_buffers(dec_ctx.get()); }
 
 decoder_ptr Stream::make_decoder_ptr(const AVCodec *dec) const {
     // Initial initialization

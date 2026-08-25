@@ -23,6 +23,11 @@ extern "C" {
 
 using namespace std;
 
+void FFmpeg::execute_on_streams(stream_f &&f) {
+    for (auto &stream : streams)
+        if (stream != nullptr && stream.get()) f(stream);
+}
+
 FFmpeg::~FFmpeg() {
     // Should happend before stopping to wait
     // otherwise infinite wait in loader_thread_loop
@@ -31,8 +36,7 @@ FFmpeg::~FFmpeg() {
     // Because both streams are constructed in a later function call
     // they will be destructed after this destructor, thats why this
     // can't happend in destructor of stream
-    for (auto &stream : {audio, video})
-        if (stream.get()) stream->frames_queue.stop_waiting();
+    execute_on_streams([](stream_ptr stream) { stream->frames_queue.stop_waiting(); });
     join_if_joinable(loader_thread);
 }
 
@@ -75,6 +79,20 @@ static int64_t seek(void *opaque, int64_t offset, int whence) {
     if (bd->get_offset() > bd->get_total_size() || bd->get_offset() < 0) return -1;
 
     return bd->get_offset();
+}
+
+int FFmpeg::seek_ts(const double &duration_count) {
+    auto ts = static_cast<int64_t>(duration_count / time_base);
+
+    // https://stackoverflow.com/questions/21475397/cannot-get-first-frames-using-avformat-seek-file
+    // avformat_seek_file(fmt_ctx.get(), stream_index, 0, ts, ts, AVSEEK_FLAG_BACKWARD);
+    int ret = av_seek_frame(fmt_ctx.get(), video->stream_index, ts, AVSEEK_FLAG_BACKWARD);
+
+    // https://ffmpeg.org/doxygen/trunk/group__lavc__misc.html#gaf60b0e076f822abcb2700eb601d352a6
+    video->flush_buffers();
+    audio->flush_buffers();
+
+    return ret;
 }
 
 // https://www.ffmpeg.org/doxygen/2.3/avio_reading_8c-example.html#_a10
@@ -268,9 +286,6 @@ void FFmpeg::loader_thread_loop() {
         }
 
         load_stream(video);
-        // Causes double loads on no audio
-        // not good like this alone
-        // load_stream(audio);
 
         video->frames_queue.wait_for_size_change();
     }

@@ -26,7 +26,7 @@ string Player::get_total_duration_str() const { return ffmpeg.total_duration_str
 bool Player::is_loading() const { return state == LOADING; }
 bool Player::is_stalled() const {
     // is_loading() should be first
-    // state cant be accessed cause of multiple states
+    // state cant be accessed cause of multiple threads
     if (is_loading()) return true;
     if (state == VIDEO_NOT_SET) {
         fprintf(stderr, "No video set, can't play!");
@@ -97,7 +97,6 @@ LastFrame &Player::operator()() {
         auto current = ffmpeg.front_frame_timestamp_in_seconds(ffmpeg.video);
         auto expected = played_duration.count();
         if (current <= expected) {
-            // this->last_frame = std::move(ffmpeg.video->frames_queue.front_and_pop());
             this->last_frame = std::move(ffmpeg.video->frames_queue.front());
             ffmpeg.video->frames_queue.pop_front();
         }
@@ -134,9 +133,6 @@ void Player::set_played_duration(const duration &new_played_duration) {
 
     const time_point started_setting = now_f();
 
-    // old frames are now invalid
-    ffmpeg.video->frames_queue.clear();
-
     // started_setting = now
     this->start_time = started_setting - cast_to_start_time(new_played_duration);
 
@@ -149,15 +145,16 @@ void Player::set_played_duration(const duration &new_played_duration) {
 
         double duration_count = chrono::duration<double>(new_played_duration).count();
 
+        // old frames are now invalid
+        ffmpeg.execute_on_streams([](stream_ptr stream) { stream->frames_queue.clear(); });
+
         // Seek to keyframe <= the duration
         auto seeked = duration_count;
         double decriment = 1.;
         auto stop = 1e-5;
 
-        ffmpeg.video->frames_queue.clear();
-        ffmpeg.audio->frames_queue.clear();
         while (true) {
-            if (ffmpeg.video->seek_ts(seeked) < 0) return;
+            if (ffmpeg.seek_ts(seeked) < 0) return;
             if (ffmpeg.video->frames_queue.empty()) ffmpeg.skip_frames();
 
             if (ffmpeg.front_frame_timestamp_in_seconds(ffmpeg.video) <= duration_count) break;

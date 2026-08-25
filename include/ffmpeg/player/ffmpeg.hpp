@@ -1,6 +1,7 @@
 #ifndef FFMPEG_META_H
 #define FFMPEG_META_H
 
+#include "types/constants.hpp"
 #include "types/types.hpp"
 #include "ffmpeg/player/stream/stream.hpp" // IWYU pragma: keep
 #include "utils/guards/atomic_boolean_guard.hpp"
@@ -37,8 +38,11 @@ class FFmpeg {
   public:
     format_ptr fmt_ctx = make_format_ptr();
 
-    stream_ptr video;
-    stream_ptr audio;
+    std::array<stream_ptr, NUM_OF_STREAMS> streams;
+#define video streams[VIDEO]
+#define audio streams[AUDIO]
+
+    void execute_on_streams(stream_f &&);
 
     Resolution aspect_ratio{16, 9};
     std::string total_duration_str;
@@ -53,6 +57,7 @@ class FFmpeg {
     bool is_loaded(const LoadStatus &status) const;
     LoadStatus load_more_frames();
     LoadStatus skip_frames(LoadStatus skip_until = LOADED_VIDEO);
+    int seek_ts(const double &);
 
     double front_frame_timestamp_in_seconds(stream_ptr &) const;
 

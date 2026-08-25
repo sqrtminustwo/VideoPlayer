@@ -3,6 +3,7 @@
 
 #include "fetcher/data_fetcher.hpp"
 #include <array>
+#include <functional>
 #include <memory>
 #include <chrono>
 
@@ -40,6 +41,8 @@ using avio_ptr = std::unique_ptr<AVIOContext, void (*)(AVIOContext *)>;
 using swr_ptr = std::unique_ptr<SwrContext, void (*)(SwrContext *)>;
 
 enum ComponentsIndex { CONTROLLER = 0, PAUSE, BACKWARD, FORWARD, SPINNER };
+enum StreamsIndex { VIDEO = 0, AUDIO };
+using stream_f = std::function<void(stream_ptr)>;
 using components_container = std::array<std::shared_ptr<Overlay::Component>, 5>;
 using animated_ptr = std::shared_ptr<Overlay::Animated>;
 using ach = Overlay::AnimatedComponentsHandle &;

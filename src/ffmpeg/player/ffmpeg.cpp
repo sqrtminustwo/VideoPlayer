@@ -26,9 +26,10 @@ extern "C" {
 using namespace std;
 
 #define STREAMS_FOR(inner)                                                                         \
-    for (auto &stream : streams)                                                                   \
-        if (stream != nullptr && stream.get()) inner
-void FFmpeg::execute_on_streams(stream_f_void &&f) { STREAMS_FOR(f(stream)); }
+    for (auto &stream : streams) {                                                                 \
+        if (stream != nullptr && stream.get()) { inner; }                                          \
+    }
+void FFmpeg::execute_on_streams(stream_f_void &&f, void *ptr) { STREAMS_FOR(f(stream, this, ptr)); }
 bool FFmpeg::conditional_on_streams(stream_f_bool &&f) {
     bool cond = false;
     STREAMS_FOR(cond = cond || f(stream));
@@ -43,7 +44,7 @@ FFmpeg::~FFmpeg() {
     // Because both streams are constructed in a later function call
     // they will be destructed after this destructor, thats why this
     // can't happend in destructor of stream
-    execute_on_streams([](stream_ptr stream) { stream->frames_queue.stop_waiting(); });
+    streams_oneliner(stream->frames_queue.stop_waiting());
     join_if_joinable(loader_thread);
 }
 

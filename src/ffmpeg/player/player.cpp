@@ -134,7 +134,7 @@ void Player::set_played_duration(const duration &new_played_duration) {
         const double duration_count = chrono::duration<double>(new_played_duration).count();
 
         // old frames are now invalid
-        ffmpeg.execute_on_streams([](stream_ptr stream) { stream->frames_queue.clear(); });
+        streams_oneliner(stream->frames_queue.clear());
 
         // Seek to keyframe <= the duration
         auto seeked = duration_count;
@@ -168,6 +168,21 @@ void Player::set_played_duration(const duration &new_played_duration) {
         }
 
         // Seek forward to exact frame
+        // auto t = [](stream_ptr &stream, FFmpeg *ffmpeg, void *ptr) {
+        //     double duration_count = *static_cast<double *>(ptr);
+        //     auto status = stream->status_on_load;
+        //
+        //     while (ffmpeg->is_loaded(status)) {
+        //         if (stream->frames_queue.empty()) status = ffmpeg->skip_frames(stream);
+        //
+        //         while (!stream->frames_queue.empty()) {
+        //             if (ffmpeg->front_frame_timestamp_in_seconds(stream) >= duration_count)
+        //             return; stream->frames_queue.pop_front();
+        //         }
+        //     }
+        // };
+        // ffmpeg.execute_on_streams(t, (void *)&duration_count);
+
         auto t = [&](stream_ptr &stream) {
             auto status = stream->status_on_load;
 
@@ -180,7 +195,10 @@ void Player::set_played_duration(const duration &new_played_duration) {
                 }
             }
         };
-        for (stream_ptr stream : ffmpeg.streams) t(stream);
+        for (stream_ptr stream : ffmpeg.streams) {
+            if (!stream) return;
+            t(stream);
+        }
 
         if (is_loading()) {
             const auto ended_setting = now_f();

@@ -28,6 +28,7 @@ class Player;
 class Stream;
 class frame_ptr;
 class DataFetcher;
+class FFmpeg;
 
 using textures_t = std::array<unsigned int *, 3>;
 
@@ -44,7 +45,7 @@ enum ComponentsIndex { CONTROLLER = 0, PAUSE, BACKWARD, FORWARD, SPINNER };
 enum StreamsIndex { VIDEO = 0, AUDIO };
 enum LoadStatus { LOADED_AUDIO = 0, LOADED_VIDEO, NEED_MORE_PACKETS, ERROR, END };
 std::ostream &operator<<(std::ostream &, const LoadStatus);
-using stream_f_void = std::function<void(stream_ptr &)>;
+using stream_f_void = std::function<void(stream_ptr &, FFmpeg *, void *)>;
 using stream_f_bool = std::function<bool(stream_ptr &)>;
 using components_container = std::array<std::shared_ptr<Overlay::Component>, 5>;
 using animated_ptr = std::shared_ptr<Overlay::Animated>;

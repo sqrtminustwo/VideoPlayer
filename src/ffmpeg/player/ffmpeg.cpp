@@ -27,7 +27,7 @@ using namespace std;
 
 #define STREAMS_FOR(inner)                                                                         \
     for (auto &stream : streams)                                                                   \
-        if (stream != nullptr && stream.get()) inner
+        if (stream && stream->is_valid()) inner
 void FFmpeg::execute_on_streams(stream_f_void &&f) { STREAMS_FOR(f(stream)); }
 bool FFmpeg::conditional_on_streams(stream_f_bool &&f) {
     bool cond = false;
@@ -96,8 +96,7 @@ int FFmpeg::seek_ts(const double &duration_count) {
     int ret = av_seek_frame(fmt_ctx.get(), video->stream_index, ts, AVSEEK_FLAG_BACKWARD);
 
     // https://ffmpeg.org/doxygen/trunk/group__lavc__misc.html#gaf60b0e076f822abcb2700eb601d352a6
-    video->flush_buffers();
-    audio->flush_buffers();
+    execute_on_streams([](stream_ptr &stream) { stream->flush_buffers(); });
 
     return ret;
 }
@@ -164,18 +163,7 @@ int FFmpeg::set_video(const string &filename) {
     video->init_stream(AVMEDIA_TYPE_VIDEO);
     audio->init_stream(AVMEDIA_TYPE_AUDIO);
 
-    stream_ptr time_base_stream = nullptr;
-    if (video->is_valid()) {
-        time_base_stream = video;
-        aspect_ratio = Resolution(video->dec_ctx->width, video->dec_ctx->height);
-    } else if (audio->is_valid()) {
-        time_base_stream = audio;
-    } else {
-        printf("No audio or video stream found, exiting...\n");
-        return -1;
-    }
-
-    // time_base = av_q2d(time_base_stream->get_stream()->time_base);
+    if (video->is_valid()) aspect_ratio = Resolution(video->dec_ctx->width, video->dec_ctx->height);
     total_duration = chrono::duration<float>(fmt_ctx->duration / AV_TIME_BASE);
     total_duration_str = duration_to_string(total_duration);
 
@@ -263,7 +251,7 @@ LoadStatus FFmpeg::send_packet() {
 
 AtomicBooleanGuard FFmpeg::get_should_pause_guard() {
     auto guard = AtomicBooleanGuard{pause_loader.should_pause};
-    video->frames_queue.stop_waiting();
+    execute_on_streams([](stream_ptr &stream) { stream->frames_queue.stop_waiting(); });
     return guard;
 }
 void FFmpeg::wait_until_loader_thread_paused() {
@@ -292,8 +280,9 @@ void FFmpeg::loader_thread_loop() {
         while (conditional_on_streams([](stream_ptr &stream) {
                    return stream->frames_queue.size() < stream->frames_queue_size_bound;
                }) &&
-               (status != END && status != ERROR))
+               (status != END && status != ERROR)) {
             status = send_packet();
+        }
 
         video->frames_queue.wait_for_size_change();
     }

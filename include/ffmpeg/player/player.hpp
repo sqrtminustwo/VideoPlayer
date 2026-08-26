@@ -38,8 +38,8 @@ class Player {
     duration get_total_duration() const;
     std::string get_total_duration_str() const;
 
-    stream_ptr get_audio_stream() const;
-    stream_ptr get_video_stream() const;
+    stream_ptr get_audio_stream();
+    stream_ptr get_video_stream();
 
     int set_video(const std::string &filename = nullptr);
 

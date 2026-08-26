@@ -35,8 +35,8 @@ bool Player::is_stalled() const {
     return pause.paused_now();
 }
 
-stream_ptr Player::get_audio_stream() const { return ffmpeg.audio; }
-stream_ptr Player::get_video_stream() const { return ffmpeg.video; };
+stream_ptr Player::get_audio_stream() { return ffmpeg.audio(); }
+stream_ptr Player::get_video_stream() { return ffmpeg.video(); };
 
 int Player::set_video(const string &filename) {
     join_if_joinable(duration_setting_thread);
@@ -46,7 +46,7 @@ int Player::set_video(const string &filename) {
     state = VIDEO_SET_NOT_PLAYED;
 
     last_frame = std::move(
-        std::static_pointer_cast<Video>(ffmpeg.video)->make_black_frame_ptr(ffmpeg.aspect_ratio)
+        std::static_pointer_cast<Video>(ffmpeg.video())->make_black_frame_ptr(ffmpeg.aspect_ratio)
     );
 
     return ret;
@@ -81,12 +81,12 @@ LastFrame &Player::operator()() {
 
     played_duration = duration_diff(now, start_time);
 
-    if (ffmpeg.video && !ffmpeg.video->frames_queue.empty()) {
-        auto current = ffmpeg.front_frame_timestamp_in_seconds(ffmpeg.video);
+    if (ffmpeg.video() && !ffmpeg.video()->frames_queue.empty()) {
+        auto current = ffmpeg.front_frame_timestamp_in_seconds(ffmpeg.video());
         auto expected = played_duration.count();
         if (current <= expected) {
-            this->last_frame = std::move(ffmpeg.video->frames_queue.front());
-            ffmpeg.video->frames_queue.pop_front();
+            this->last_frame = std::move(ffmpeg.video()->frames_queue.front());
+            ffmpeg.video()->frames_queue.pop_front();
         }
     }
 
@@ -134,24 +134,27 @@ void Player::set_played_duration(const duration &new_played_duration) {
         const double duration_count = chrono::duration<double>(new_played_duration).count();
 
         // old frames are now invalid
-        streams_oneliner(stream->frames_queue.clear());
+        ffmpeg.execute_on_streams(streams_oneliner(stream->frames_queue.clear()));
 
         // Seek to keyframe <= the duration
         auto seeked = duration_count;
         double decriment = 1.;
         auto tol = 1e-5;
 
+        bool all_before = true;
+        auto args = std::pair<bool *, double>(&all_before, duration_count);
+        auto iterate_over_stream = [](stream_ptr &stream, FFmpeg *ffmpeg, void *ptr) {
+            auto &[all_before, duration_count] = *static_cast<pair<bool *, double> *>(ptr);
+            if (stream->frames_queue.empty()) ffmpeg->skip_frames(stream);
+            *all_before = all_before &&
+                          ffmpeg->front_frame_timestamp_in_seconds(stream) <= duration_count;
+        };
+
         while (true) {
             if (ffmpeg.seek_ts(seeked) < 0) return;
 
-            bool all_before = true;
-            for (stream_ptr &stream : ffmpeg.streams) {
-                if (!stream || !stream->is_valid()) continue;
-                if (stream->frames_queue.empty()) ffmpeg.skip_frames(stream);
-                all_before = all_before &&
-                             ffmpeg.front_frame_timestamp_in_seconds(stream) <= duration_count;
-            }
-
+            all_before = false;
+            ffmpeg.execute_on_streams(iterate_over_stream, &args);
             if (all_before) break;
 
             // Should be after skipping otherwise
@@ -168,37 +171,20 @@ void Player::set_played_duration(const duration &new_played_duration) {
             played_duration = new_played_duration;
         }
 
-        // Seek forward to exact frame
-        // auto t = [](stream_ptr &stream, FFmpeg *ffmpeg, void *ptr) {
-        //     double duration_count = *static_cast<double *>(ptr);
-        //     auto status = stream->status_on_load;
-        //
-        //     while (ffmpeg->is_loaded(status)) {
-        //         if (stream->frames_queue.empty()) status = ffmpeg->skip_frames(stream);
-        //
-        //         while (!stream->frames_queue.empty()) {
-        //             if (ffmpeg->front_frame_timestamp_in_seconds(stream) >= duration_count)
-        //             return; stream->frames_queue.pop_front();
-        //         }
-        //     }
-        // };
-        // ffmpeg.execute_on_streams(t, (void *)&duration_count);
-
-        auto t = [&](stream_ptr &stream) {
+        auto seek_to_exact = [](stream_ptr &stream, FFmpeg *ffmpeg, void *ptr) {
+            double duration_count = *static_cast<double *>(ptr);
             auto status = stream->status_on_load;
 
-            while (ffmpeg.is_loaded(status)) {
-                if (stream->frames_queue.empty()) status = ffmpeg.skip_frames(stream);
+            while (ffmpeg->is_loaded(status)) {
+                if (stream->frames_queue.empty()) status = ffmpeg->skip_frames(stream);
 
                 while (!stream->frames_queue.empty()) {
-                    if (ffmpeg.front_frame_timestamp_in_seconds(stream) >= duration_count) return;
+                    if (ffmpeg->front_frame_timestamp_in_seconds(stream) >= duration_count) return;
                     stream->frames_queue.pop_front();
                 }
             }
         };
-        for (stream_ptr stream : ffmpeg.streams) {
-            if (stream && stream->is_valid()) t(stream);
-        }
+        ffmpeg.execute_on_streams(seek_to_exact, (void *)&duration_count);
 
         if (is_loading()) {
             const auto ended_setting = now_f();

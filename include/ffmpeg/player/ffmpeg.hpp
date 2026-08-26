@@ -25,6 +25,7 @@ class FFmpeg {
     PauseThread pause_loader;
     std::atomic_bool should_load = false;
     std::thread loader_thread;
+    std::array<stream_ptr, NUM_OF_STREAMS> streams;
 
     LoadStatus send_packet();
     format_ptr make_format_ptr();
@@ -35,11 +36,9 @@ class FFmpeg {
   public:
     format_ptr fmt_ctx = make_format_ptr();
 
-    std::array<stream_ptr, NUM_OF_STREAMS> streams;
-#define video streams[VIDEO]
-#define audio streams[AUDIO]
+    stream_ptr &audio();
+    stream_ptr &video();
 #define streams_oneliner(oneliner) [](stream_ptr stream, FFmpeg *, void *) { oneliner; }
-
     void execute_on_streams(stream_f_void &&, void * = nullptr);
     bool conditional_on_streams(stream_f_bool &&);
 

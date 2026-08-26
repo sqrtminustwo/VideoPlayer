@@ -1,8 +1,8 @@
 #include "ffmpeg/player/ffmpeg.hpp"
 #include "ffmpeg/platform/make_fetcher.hpp"
 #include "ffmpeg/player/stream/audio.hpp"
-#include "types/frame/frame_ptr.hpp"
 #include "ffmpeg/player/stream/video.hpp"
+#include "types/frame/frame_ptr.hpp"
 #include "types/types.hpp"
 #include "utils/guards/atomic_boolean_guard.hpp"
 #include "utils/guards/packet_guard.hpp"
@@ -34,6 +34,9 @@ bool FFmpeg::conditional_on_streams(stream_f_bool &&f) {
     STREAMS_FOR(cond = cond || f(stream));
     return cond;
 }
+
+stream_ptr &FFmpeg::audio() { return streams[AUDIO]; }
+stream_ptr &FFmpeg::video() { return streams[VIDEO]; }
 
 FFmpeg::~FFmpeg() {
     // Should happend before stopping to wait
@@ -89,11 +92,11 @@ static int64_t seek(void *opaque, int64_t offset, int whence) {
 }
 
 int FFmpeg::seek_ts(const double &duration_count) {
-    auto ts = static_cast<int64_t>(duration_count / av_q2d(video->get_stream()->time_base));
+    auto ts = static_cast<int64_t>(duration_count / av_q2d(video()->get_stream()->time_base));
 
     // https://stackoverflow.com/questions/21475397/cannot-get-first-frames-using-avformat-seek-file
     // avformat_seek_file(fmt_ctx.get(), stream_index, 0, ts, ts, AVSEEK_FLAG_BACKWARD);
-    int ret = av_seek_frame(fmt_ctx.get(), video->stream_index, ts, AVSEEK_FLAG_BACKWARD);
+    int ret = av_seek_frame(fmt_ctx.get(), video()->stream_index, ts, AVSEEK_FLAG_BACKWARD);
 
     // https://ffmpeg.org/doxygen/trunk/group__lavc__misc.html#gaf60b0e076f822abcb2700eb601d352a6
     execute_on_streams(streams_oneliner(stream->flush_buffers()));
@@ -157,13 +160,14 @@ int FFmpeg::set_video(const string &filename) {
         return ret;
     }
 
-    video = make_unique<Video>(fmt_ctx);
-    audio = make_unique<Audio>(fmt_ctx);
+    streams[VIDEO] = make_unique<Video>(fmt_ctx);
+    streams[AUDIO] = make_unique<Audio>(fmt_ctx);
 
-    video->init_stream(AVMEDIA_TYPE_VIDEO);
-    audio->init_stream(AVMEDIA_TYPE_AUDIO);
+    video()->init_stream(AVMEDIA_TYPE_VIDEO);
+    audio()->init_stream(AVMEDIA_TYPE_AUDIO);
 
-    if (video->is_valid()) aspect_ratio = Resolution(video->dec_ctx->width, video->dec_ctx->height);
+    if (video()->is_valid())
+        aspect_ratio = Resolution(video()->dec_ctx->width, video()->dec_ctx->height);
     total_duration = chrono::duration<float>(fmt_ctx->duration / AV_TIME_BASE);
     total_duration_str = duration_to_string(total_duration);
 
@@ -217,8 +221,9 @@ LoadStatus FFmpeg::send_packet() {
     LoadStatus on_load;
     stream_ptr stream = nullptr;
 
-    if (packet->stream_index == video->stream_index) on_load = LOADED_VIDEO, stream = video;
-    else if (packet->stream_index == audio->stream_index) on_load = LOADED_AUDIO, stream = audio;
+    if (packet->stream_index == video()->stream_index) on_load = LOADED_VIDEO, stream = video();
+    else if (packet->stream_index == audio()->stream_index)
+        on_load = LOADED_AUDIO, stream = audio();
 
     if (!stream) return load_status;
 
@@ -284,6 +289,6 @@ void FFmpeg::loader_thread_loop() {
             status = send_packet();
         }
 
-        video->frames_queue.wait_for_size_change();
+        video()->frames_queue.wait_for_size_change();
     }
 }

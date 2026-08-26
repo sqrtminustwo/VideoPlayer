@@ -4,6 +4,7 @@
 #include "types/types.hpp"
 #include "utils/utils.hpp"
 #include "types/constants.hpp"
+#include <iostream>
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -54,9 +55,6 @@ int Player::set_video(const string &filename)
 
     state = VIDEO_SET_NOT_PLAYED;
 
-    // last_frame.set(std::move(
-    //     std::static_pointer_cast<Video>(ffmpeg.video)->make_black_frame_ptr(ffmpeg.aspect_ratio)
-    // ));
     last_frame = std::move(
         std::static_pointer_cast<Video>(ffmpeg.video)->make_black_frame_ptr(ffmpeg.aspect_ratio)
     );
@@ -143,7 +141,7 @@ void Player::set_played_duration(const duration &new_played_duration) {
         auto should_load_guard = ffmpeg.get_should_pause_guard();
         ffmpeg.wait_until_loader_thread_paused();
 
-        double duration_count = chrono::duration<double>(new_played_duration).count();
+        const double duration_count = chrono::duration<double>(new_played_duration).count();
 
         // old frames are now invalid
         ffmpeg.execute_on_streams([](stream_ptr stream) { stream->frames_queue.clear(); });
@@ -151,22 +149,27 @@ void Player::set_played_duration(const duration &new_played_duration) {
         // Seek to keyframe <= the duration
         auto seeked = duration_count;
         double decriment = 1.;
-        auto stop = 1e-5;
+        auto tol = 1e-5;
 
         while (true) {
             if (ffmpeg.seek_ts(seeked) < 0) return;
-            if (ffmpeg.video->frames_queue.empty()) ffmpeg.skip_frames();
 
-            if (ffmpeg.front_frame_timestamp_in_seconds(ffmpeg.video) <= duration_count) break;
+            bool all_before = true;
+            for (stream_ptr &stream : ffmpeg.streams) {
+                if (stream->frames_queue.empty()) ffmpeg.skip_frames(stream);
+                all_before = all_before &&
+                             ffmpeg.front_frame_timestamp_in_seconds(stream) <= duration_count;
+            }
+
+            if (all_before) break;
 
             // Should be after skipping otherwise
             // you wont be able to set time 0
-            if (seeked > -stop && seeked < stop) break;
+            if (seeked > -tol && seeked < tol) break;
 
             seeked = max(0., seeked - decriment);
         }
 
-        // Seek forward to exact frame
         duration old_played_duration;
         {
             LOCK_PLAYED_DURATION;
@@ -174,10 +177,20 @@ void Player::set_played_duration(const duration &new_played_duration) {
             played_duration = new_played_duration;
         }
 
-        auto status = LOADED_VIDEO;
-        while (ffmpeg.is_loaded(status) &&
-               ffmpeg.front_frame_timestamp_in_seconds(ffmpeg.video) < duration_count)
-            status = ffmpeg.skip_frames();
+        // Seek forward to exact frame
+        auto t = [&](stream_ptr &stream) {
+            auto status = stream->status_on_load;
+
+            while (ffmpeg.is_loaded(status)) {
+                if (stream->frames_queue.empty()) status = ffmpeg.skip_frames(stream);
+
+                while (!stream->frames_queue.empty()) {
+                    if (ffmpeg.front_frame_timestamp_in_seconds(stream) >= duration_count) return;
+                    stream->frames_queue.pop_front();
+                }
+            }
+        };
+        for (stream_ptr stream : ffmpeg.streams) t(stream);
 
         if (is_loading()) {
             const auto ended_setting = now_f();

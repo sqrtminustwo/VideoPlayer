@@ -1,5 +1,6 @@
 #include "ffmpeg/player/stream/stream.hpp"
 #include "types/frame/frame_ptr.hpp" // IWYU pragma: keep
+#include "types/types.hpp"
 #include <iostream>
 
 extern "C" {
@@ -9,7 +10,8 @@ extern "C" {
 
 using namespace std;
 
-Stream::Stream(::format_ptr fmt_ctx) : fmt_ctx{fmt_ctx} {}
+Stream::Stream(::format_ptr fmt_ctx, LoadStatus status)
+    : fmt_ctx{fmt_ctx}, status_on_load{status} {}
 
 void Stream::flush_buffers() { avcodec_flush_buffers(dec_ctx.get()); }
 

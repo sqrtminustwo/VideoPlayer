@@ -8,7 +8,9 @@
 #include "utils/guards/packet_guard.hpp"
 #include "utils/utils.hpp"
 #include <atomic>
+#include <libavutil/avutil.h>
 #include <libavutil/error.h>
+#include <libavutil/rational.h>
 #include <memory>
 
 #if defined(DEBUG) || defined(__EMSCRIPTEN__)
@@ -23,9 +25,14 @@ extern "C" {
 
 using namespace std;
 
-void FFmpeg::execute_on_streams(stream_f &&f) {
-    for (auto &stream : streams)
-        if (stream != nullptr && stream.get()) f(stream);
+#define STREAMS_FOR(inner)                                                                         \
+    for (auto &stream : streams)                                                                   \
+        if (stream != nullptr && stream.get()) inner
+void FFmpeg::execute_on_streams(stream_f_void &&f) { STREAMS_FOR(f(stream)); }
+bool FFmpeg::conditional_on_streams(stream_f_bool &&f) {
+    bool cond = false;
+    STREAMS_FOR(cond = cond || f(stream));
+    return cond;
 }
 
 FFmpeg::~FFmpeg() {
@@ -82,7 +89,7 @@ static int64_t seek(void *opaque, int64_t offset, int whence) {
 }
 
 int FFmpeg::seek_ts(const double &duration_count) {
-    auto ts = static_cast<int64_t>(duration_count / time_base);
+    auto ts = static_cast<int64_t>(duration_count / av_q2d(video->get_stream()->time_base));
 
     // https://stackoverflow.com/questions/21475397/cannot-get-first-frames-using-avformat-seek-file
     // avformat_seek_file(fmt_ctx.get(), stream_index, 0, ts, ts, AVSEEK_FLAG_BACKWARD);
@@ -168,7 +175,7 @@ int FFmpeg::set_video(const string &filename) {
         return -1;
     }
 
-    time_base = av_q2d(time_base_stream->get_stream()->time_base);
+    // time_base = av_q2d(time_base_stream->get_stream()->time_base);
     total_duration = chrono::duration<float>(fmt_ctx->duration / AV_TIME_BASE);
     total_duration_str = duration_to_string(total_duration);
 
@@ -181,7 +188,9 @@ int FFmpeg::set_video(const string &filename) {
 double FFmpeg::front_frame_timestamp_in_seconds(stream_ptr &stream) const {
     auto front_frame = stream->frames_queue.front_ptr();
     if ((*front_frame).get() == nullptr) return -1;
-    return ((double)(*front_frame).get()->pts) * time_base;
+    auto pts = (*front_frame).get()->pts;
+    if (pts == AV_NOPTS_VALUE) return -1;
+    return ((double)pts) * av_q2d(stream->get_stream()->time_base);
 }
 
 LoadStatus FFmpeg::get_load_status() const { return load_status.load(memory_order_acquire); }
@@ -189,11 +198,11 @@ bool FFmpeg::is_loaded(const LoadStatus &status) const {
     return status == LOADED_VIDEO || status == LOADED_AUDIO;
 }
 
-LoadStatus FFmpeg::skip_frames(LoadStatus skip_until) {
-    video->frames_queue.clear();
+LoadStatus FFmpeg::skip_frames(stream_ptr &stream) {
+    stream->frames_queue.clear();
 
     LoadStatus state;
-    do { state = load_more_frames(); } while (state != ERROR && state != skip_until);
+    do { state = load_more_frames(); } while (state != ERROR && stream->frames_queue.empty());
     return state;
 }
 
@@ -234,6 +243,7 @@ LoadStatus FFmpeg::send_packet() {
         RETURN;
     }
 
+    int c = 0;
     while (ret >= 0) {
         /*
          * Allocates new frame each time
@@ -270,13 +280,6 @@ void FFmpeg::loader_thread_loop() {
     LoadStatus status;
     bool should_stop = false;
 
-    auto load_stream = [&status, this](stream_ptr stream) {
-        status = NEED_MORE_PACKETS;
-        while (stream->frames_queue.size() < stream->frames_queue_size_bound &&
-               (status != END && status != ERROR))
-            status = send_packet();
-    };
-
     while (should_load.load(memory_order_acquire)) {
         should_stop = pause_loader.should_pause.load(memory_order_acquire);
         if (should_stop) {
@@ -285,7 +288,12 @@ void FFmpeg::loader_thread_loop() {
             pause_loader.should_pause.wait(should_stop, memory_order_relaxed);
         }
 
-        load_stream(video);
+        status = NEED_MORE_PACKETS;
+        while (conditional_on_streams([](stream_ptr &stream) {
+                   return stream->frames_queue.size() < stream->frames_queue_size_bound;
+               }) &&
+               (status != END && status != ERROR))
+            status = send_packet();
 
         video->frames_queue.wait_for_size_change();
     }

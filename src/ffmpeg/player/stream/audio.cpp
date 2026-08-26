@@ -1,5 +1,6 @@
 #include "ffmpeg/player/stream/audio.hpp"
 #include "types/frame/frame_ptr.hpp"
+#include "types/types.hpp"
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -9,7 +10,7 @@ extern "C" {
 
 const auto format = AV_SAMPLE_FMT_FLT;
 
-Audio::Audio(format_ptr f) : Stream{f} {}
+Audio::Audio(format_ptr f) : Stream{f, LOADED_AUDIO} {}
 
 int Audio::after_init_stream() {
     if (!is_valid()) {
@@ -60,7 +61,10 @@ void Audio::add_frame(frame_ptr &&frame_ptr) {
     resampled_frame->sample_rate = frame_ptr->sample_rate;
     resampled_frame->ch_layout = frame_ptr->ch_layout;
     resampled_frame->format = format;
+    // front_frame_timestamp_in_seconds is based on pts
+    resampled_frame->pts = frame_ptr->pts;
 
     swr_convert_frame(swr_ctx.get(), resampled_frame.get(), frame_ptr.get());
+
     frames_queue.push_back(std::move(resampled_frame));
 }

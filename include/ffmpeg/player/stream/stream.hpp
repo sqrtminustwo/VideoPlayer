@@ -11,6 +11,7 @@ extern "C" {
 struct Stream {
     decoder_ptr dec_ctx = make_decoder_ptr();
     int stream_index = -1;
+    const LoadStatus status_on_load;
 
     AVStream *get_stream() const;
     bool is_valid() const;
@@ -19,7 +20,7 @@ struct Stream {
     int init_stream(AVMediaType);
 
     Stream() = delete;
-    Stream(format_ptr);
+    Stream(format_ptr, LoadStatus);
     virtual ~Stream() = default;
 
     static const int frames_queue_size_bound = 10;

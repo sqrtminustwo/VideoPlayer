@@ -8,8 +8,6 @@
 
 #include <thread>
 
-enum LoadStatus { LOADED_AUDIO = 0, LOADED_VIDEO, NEED_MORE_PACKETS, ERROR, END };
-
 struct PauseThread {
     std::atomic_bool should_pause = false; // Modified only by thread that requests to stop
     std::atomic_bool paused = false;       // Modified only by thread that is being stopped
@@ -23,7 +21,7 @@ class FFmpeg {
     avio_ptr avio_ctx = make_avio_ptr();
 
     static constexpr int avio_ctx_buffer_size = 2097152;
-    double time_base = 0;
+    // double time_base = 0;
 
     PauseThread pause_loader;
     std::atomic_bool should_load = false;
@@ -42,7 +40,8 @@ class FFmpeg {
 #define video streams[VIDEO]
 #define audio streams[AUDIO]
 
-    void execute_on_streams(stream_f &&);
+    void execute_on_streams(stream_f_void &&);
+    bool conditional_on_streams(stream_f_bool &&);
 
     Resolution aspect_ratio{16, 9};
     std::string total_duration_str;
@@ -56,7 +55,7 @@ class FFmpeg {
     LoadStatus get_load_status() const;
     bool is_loaded(const LoadStatus &status) const;
     LoadStatus load_more_frames();
-    LoadStatus skip_frames(LoadStatus skip_until = LOADED_VIDEO);
+    LoadStatus skip_frames(stream_ptr &);
     int seek_ts(const double &);
 
     double front_frame_timestamp_in_seconds(stream_ptr &) const;

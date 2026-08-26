@@ -81,7 +81,7 @@ LastFrame &Player::operator()() {
 
     played_duration = duration_diff(now, start_time);
 
-    if (ffmpeg.video->is_valid() && !ffmpeg.video->frames_queue.empty()) {
+    if (ffmpeg.video && !ffmpeg.video->frames_queue.empty()) {
         auto current = ffmpeg.front_frame_timestamp_in_seconds(ffmpeg.video);
         auto expected = played_duration.count();
         if (current <= expected) {
@@ -146,6 +146,7 @@ void Player::set_played_duration(const duration &new_played_duration) {
 
             bool all_before = true;
             for (stream_ptr &stream : ffmpeg.streams) {
+                if (!stream || !stream->is_valid()) continue;
                 if (stream->frames_queue.empty()) ffmpeg.skip_frames(stream);
                 all_before = all_before &&
                              ffmpeg.front_frame_timestamp_in_seconds(stream) <= duration_count;
@@ -196,8 +197,7 @@ void Player::set_played_duration(const duration &new_played_duration) {
             }
         };
         for (stream_ptr stream : ffmpeg.streams) {
-            if (!stream) return;
-            t(stream);
+            if (stream && stream->is_valid()) t(stream);
         }
 
         if (is_loading()) {

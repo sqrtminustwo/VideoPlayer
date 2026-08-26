@@ -38,7 +38,7 @@ class FFmpeg {
     std::array<stream_ptr, NUM_OF_STREAMS> streams;
 #define video streams[VIDEO]
 #define audio streams[AUDIO]
-#define streams_oneliner(oneliner) [](stream_ptr stream, FFmpeg *, void *) { oneliner; };
+#define streams_oneliner(oneliner) [](stream_ptr stream, FFmpeg *, void *) { oneliner; }
 
     void execute_on_streams(stream_f_void &&, void * = nullptr);
     bool conditional_on_streams(stream_f_bool &&);

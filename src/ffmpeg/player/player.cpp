@@ -4,7 +4,6 @@
 #include "types/types.hpp"
 #include "utils/utils.hpp"
 #include "types/constants.hpp"
-#include <iostream>
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -39,19 +38,10 @@ bool Player::is_stalled() const {
 stream_ptr Player::get_audio_stream() const { return ffmpeg.audio; }
 stream_ptr Player::get_video_stream() const { return ffmpeg.video; };
 
-#ifdef __EMSCRIPTEN__
-int Player::set_video()
-#else
-int Player::set_video(const string &filename)
-#endif
-{
+int Player::set_video(const string &filename) {
     join_if_joinable(duration_setting_thread);
 
-    int ret = ffmpeg.set_video(
-#ifndef __EMSCRIPTEN__
-        filename
-#endif
-    );
+    int ret = ffmpeg.set_video(filename);
 
     state = VIDEO_SET_NOT_PLAYED;
 

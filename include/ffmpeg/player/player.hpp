@@ -41,11 +41,7 @@ class Player {
     stream_ptr get_audio_stream() const;
     stream_ptr get_video_stream() const;
 
-#ifdef __EMSCRIPTEN__
-    int set_video();
-#else
-    int set_video(const std::string &filename);
-#endif
+    int set_video(const std::string &filename = nullptr);
 
     bool is_loading() const;
     bool is_stalled() const;

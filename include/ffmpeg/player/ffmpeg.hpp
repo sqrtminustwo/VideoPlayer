@@ -21,7 +21,6 @@ class FFmpeg {
     avio_ptr avio_ctx = make_avio_ptr();
 
     static constexpr int avio_ctx_buffer_size = 2097152;
-    // double time_base = 0;
 
     PauseThread pause_loader;
     std::atomic_bool should_load = false;
@@ -47,7 +46,7 @@ class FFmpeg {
     std::string total_duration_str;
     duration total_duration;
 
-    int set_video(const std::string &filename = nullptr);
+    int set_video(const std::string &filename);
 
     AtomicBooleanGuard get_should_pause_guard();
     void wait_until_loader_thread_paused();

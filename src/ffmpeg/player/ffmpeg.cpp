@@ -189,8 +189,9 @@ bool FFmpeg::is_loaded(const LoadStatus &status) const {
 LoadStatus FFmpeg::skip_frames(stream_ptr &stream) {
     stream->frames_queue.clear();
 
-    LoadStatus status = NEED_MORE_PACKETS;
+    LoadStatus status{};
     while (status != ERROR && stream->frames_queue.empty()) {
+        status = NEED_MORE_PACKETS;
         while (status == NEED_MORE_PACKETS) status = send_packet();
     }
 
@@ -214,21 +215,14 @@ LoadStatus FFmpeg::send_packet() {
     LoadStatus on_load;
     stream_ptr stream = nullptr;
 
-    if (packet->stream_index == video()->stream_index) on_load = LOADED_VIDEO, stream = video();
-    else if (packet->stream_index == audio()->stream_index)
-        on_load = LOADED_AUDIO, stream = audio();
-
-    // printf("--------------------\n");
-    // using finder_args = tuple<int, LoadStatus *, stream_ptr *>;
-    // finder_args args{packet->stream_index, &on_load, &stream};
-    // auto find_matching_stream = [](stream_ptr &stream, FFmpeg *ffmpeg, void *ptr) {
-    //     auto &[stream_index, on_load, stream_to_def] = *static_cast<finder_args *>(ptr);
-    //     if (stream_index == stream->stream_index) {
-    //         printf("found stream\n");
-    //         *on_load = stream->status_on_load, *stream_to_def = stream;
-    //     }
-    // };
-    // execute_on_streams(find_matching_stream, &args);
+    using finder_args = tuple<int, LoadStatus *, stream_ptr *>;
+    finder_args args{packet->stream_index, &on_load, &stream};
+    auto find_matching_stream = [](stream_ptr &stream, FFmpeg *ffmpeg, void *ptr) {
+        auto &[stream_index, on_load, stream_to_def] = *static_cast<finder_args *>(ptr);
+        if (stream_index == stream->stream_index)
+            *on_load = stream->status_on_load, *stream_to_def = stream;
+    };
+    execute_on_streams(find_matching_stream, &args);
 
     if (!stream) return load_status;
 

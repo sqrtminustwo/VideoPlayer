@@ -142,7 +142,7 @@ void Player::set_played_duration(const duration &new_played_duration) {
         auto tol = 1e-5;
 
         bool all_before = true;
-        auto args = std::pair<bool *, double>(&all_before, duration_count);
+        std::pair<bool *, double> args{&all_before, duration_count};
         auto iterate_over_stream = [](stream_ptr &stream, FFmpeg *ffmpeg, void *ptr) {
             auto &[all_before, duration_count] = *static_cast<pair<bool *, double> *>(ptr);
             if (stream->frames_queue.empty()) ffmpeg->skip_frames(stream);

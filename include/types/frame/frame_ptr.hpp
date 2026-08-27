@@ -2,6 +2,7 @@
 #define FRAME_H
 
 #include "types/types.hpp"
+
 #include <functional>
 
 using extra_frame_free = std::function<void(AVFrame *)>;
@@ -18,7 +19,6 @@ class frame_ptr {
 
     ~frame_ptr() = default;
     frame_ptr(const frame_ptr &) = delete;
-    // frame_ptr(const frame_ptr &) = default;
     frame_ptr &operator=(const frame_ptr &) = default;
     frame_ptr(frame_ptr &&) = default;
     frame_ptr &operator=(frame_ptr &&) = default;

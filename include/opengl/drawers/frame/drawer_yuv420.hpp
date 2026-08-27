@@ -2,6 +2,7 @@
 #define YUV420_DRAWER_H
 
 #include "opengl/drawers/frame/drawer.hpp"
+
 #include <memory>
 
 struct DrawerYUV420 : Frame::Drawer {

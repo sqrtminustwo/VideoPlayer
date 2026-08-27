@@ -26,6 +26,7 @@ class FFmpeg {
     std::atomic_bool should_load = false;
     std::thread loader_thread;
     std::array<stream_ptr, NUM_OF_STREAMS> streams;
+    format_ptr fmt_ctx = make_format_ptr();
 
     LoadStatus send_packet();
     format_ptr make_format_ptr();
@@ -34,8 +35,6 @@ class FFmpeg {
     frame_ptr make_black_frame();
 
   public:
-    format_ptr fmt_ctx = make_format_ptr();
-
     stream_ptr &audio();
     stream_ptr &video();
 #define streams_oneliner(oneliner) [](stream_ptr stream, FFmpeg *, void *) { oneliner; }
@@ -43,8 +42,8 @@ class FFmpeg {
     bool conditional_on_streams(stream_f_bool &&);
 
     Resolution aspect_ratio{16, 9};
-    std::string total_duration_str;
     duration total_duration;
+    std::string total_duration_str;
 
     int set_video(const std::string &filename);
 
@@ -53,7 +52,6 @@ class FFmpeg {
 
     LoadStatus get_load_status() const;
     bool is_loaded(const LoadStatus &status) const;
-    LoadStatus load_more_frames();
     LoadStatus skip_frames(stream_ptr &);
     int seek_ts(const double &);
 

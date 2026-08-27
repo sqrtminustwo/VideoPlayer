@@ -2,6 +2,7 @@
 #define OPENGL_CONTEXT_H
 
 #include "opengl/shaders/texture_shader.hpp"
+
 #include <cstdio>
 #include <string>
 

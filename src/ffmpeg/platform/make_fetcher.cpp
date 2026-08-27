@@ -2,6 +2,7 @@
 #include "buffer/cfb2.hpp"
 #include "fetcher/data_fetcher.hpp"
 #include "types/types.hpp"
+
 #include <memory>
 
 extern "C" {

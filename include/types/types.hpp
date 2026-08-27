@@ -27,7 +27,6 @@ class OpenGL;
 class Player;
 class Stream;
 class frame_ptr;
-class DataFetcher;
 class FFmpeg;
 
 using textures_t = std::array<unsigned int *, 3>;
@@ -42,9 +41,11 @@ using avio_ptr = std::unique_ptr<AVIOContext, void (*)(AVIOContext *)>;
 using swr_ptr = std::unique_ptr<SwrContext, void (*)(SwrContext *)>;
 
 enum ComponentsIndex { CONTROLLER = 0, PAUSE, BACKWARD, FORWARD, SPINNER };
-enum StreamsIndex { VIDEO = 0, AUDIO };
+enum VideoPlayerState { VIDEO_NOT_SET, VIDEO_SET_NOT_PLAYED, VIDEO_PLAYING, LOADING };
 enum LoadStatus { LOADED_AUDIO = 0, LOADED_VIDEO, NEED_MORE_PACKETS, ERROR, END };
+enum StreamsIndex { VIDEO = 0, AUDIO };
 std::ostream &operator<<(std::ostream &, const LoadStatus);
+
 using stream_f_void = std::function<void(stream_ptr &, FFmpeg *, void *)>;
 using stream_f_bool = std::function<bool(stream_ptr &)>;
 using components_container = std::array<std::shared_ptr<Overlay::Component>, 5>;

@@ -1,6 +1,7 @@
 #include "ffmpeg/player/stream/video.hpp"
 #include "types/frame/frame_ptr.hpp"
 #include "types/types.hpp"
+#include <libavutil/avutil.h>
 
 extern "C" {
 #include <libavutil/imgutils.h>
@@ -8,11 +9,9 @@ extern "C" {
 #include <libavutil/frame.h>
 }
 
-Video::Video(format_ptr f) : Stream{f, LOADED_VIDEO} {}
+Video::Video(format_ptr f) : Stream{f, LOADED_VIDEO, AVMEDIA_TYPE_VIDEO} {}
 
-void Video::add_frame(frame_ptr &&frame_ptr) {
-    if (frame_ptr->width > 0 && frame_ptr->height > 0) frames_queue.push_back(std::move(frame_ptr));
-}
+void Video::add_frame(frame_ptr &&frame_ptr) { frames_queue.push_back(std::move(frame_ptr)); }
 
 frame_ptr Video::make_black_frame_ptr(Resolution res) {
     int ret;

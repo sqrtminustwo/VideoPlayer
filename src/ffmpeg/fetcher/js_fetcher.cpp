@@ -1,4 +1,3 @@
-#ifdef __EMSCRIPTEN__
 #include "ffmpeg/fetcher/js_fetcher.hpp"
 
 extern "C" {
@@ -11,4 +10,3 @@ int JSFetcher::getTotalSizeLocal() { return getTotalSize(); }
 void JSFetcher::fetchFramesLocal(int_type offset, uint8_t *buf, int_type length) {
     fetchFrames(offset, buf, length);
 }
-#endif

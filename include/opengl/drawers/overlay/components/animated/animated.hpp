@@ -3,6 +3,7 @@
 
 #include "opengl/drawers/overlay/components/component.hpp"
 #include "types/types.hpp"
+
 #include <atomic>
 
 namespace Overlay {

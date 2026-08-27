@@ -10,8 +10,6 @@
 #include "ffmpeg/player/ffmpeg.hpp"
 #include "types/types.hpp"
 
-enum VideoPlayerState { VIDEO_NOT_SET, VIDEO_SET_NOT_PLAYED, VIDEO_PLAYING, LOADING };
-
 class Player {
     FFmpeg ffmpeg;
 

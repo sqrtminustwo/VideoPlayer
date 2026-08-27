@@ -1,6 +1,7 @@
 #include "ffmpeg/player/stream/audio.hpp"
 #include "types/frame/frame_ptr.hpp"
 #include "types/types.hpp"
+#include <libavutil/avutil.h>
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -10,12 +11,10 @@ extern "C" {
 
 const auto format = AV_SAMPLE_FMT_FLT;
 
-Audio::Audio(format_ptr f) : Stream{f, LOADED_AUDIO} {}
-
-int Audio::after_init_stream() {
+Audio::Audio(format_ptr f) : Stream{f, LOADED_AUDIO, AVMEDIA_TYPE_AUDIO} {
     if (!is_valid()) {
         printf("No audio\n");
-        return -1;
+        return;
     }
 
     int ret;
@@ -34,18 +33,16 @@ int Audio::after_init_stream() {
              nullptr
          )) < 0) {
         printf("Could not set resampler options!\n");
-        return ret;
+        return;
     }
 
     if ((ret = swr_init(swr_ctx)) < 0) {
         printf("Failed to initialize the resampling context\n");
         swr_free(&swr_ctx);
-        return ret;
+        return;
     }
 
     this->swr_ctx = make_swr_ptr(swr_ctx);
-
-    return 0;
 }
 
 swr_ptr Audio::make_swr_ptr(SwrContext *swr_ctx) {
@@ -55,16 +52,16 @@ swr_ptr Audio::make_swr_ptr(SwrContext *swr_ctx) {
     });
 }
 
-void Audio::add_frame(frame_ptr &&frame_ptr) {
-    class frame_ptr resampled_frame {};
+void Audio::add_frame(frame_ptr &&frame) {
+    frame_ptr resampled_frame{};
 
-    resampled_frame->sample_rate = frame_ptr->sample_rate;
-    resampled_frame->ch_layout = frame_ptr->ch_layout;
+    resampled_frame->sample_rate = frame->sample_rate;
+    resampled_frame->ch_layout = frame->ch_layout;
     resampled_frame->format = format;
     // front_frame_timestamp_in_seconds is based on pts
-    resampled_frame->pts = frame_ptr->pts;
+    resampled_frame->pts = frame->pts;
 
-    swr_convert_frame(swr_ctx.get(), resampled_frame.get(), frame_ptr.get());
+    swr_convert_frame(swr_ctx.get(), resampled_frame.get(), frame.get());
 
     frames_queue.push_back(std::move(resampled_frame));
 }

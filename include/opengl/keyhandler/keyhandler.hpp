@@ -2,6 +2,7 @@
 #define KEYHANDLER_H
 
 #include "types/types.hpp"
+
 #include <GLFW/glfw3.h>
 #include <atomic>
 

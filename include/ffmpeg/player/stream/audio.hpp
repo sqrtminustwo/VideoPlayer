@@ -10,8 +10,6 @@ struct Audio : public Stream {
     Audio(format_ptr);
 
   private:
-    int after_init_stream() override;
-
     swr_ptr swr_ctx = make_swr_ptr();
 
     swr_ptr make_swr_ptr(SwrContext * = nullptr);

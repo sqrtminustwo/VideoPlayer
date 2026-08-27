@@ -26,8 +26,9 @@ extern "C" {
 using namespace std;
 
 #define STREAMS_FOR(inner)                                                                         \
-    for (auto &stream : streams)                                                                   \
-        if (stream && stream->is_valid()) inner
+    for (auto &stream : streams) {                                                                 \
+        if (stream && stream->is_valid()) { inner; }                                               \
+    }
 void FFmpeg::execute_on_streams(stream_f_void &&f, void *ptr) { STREAMS_FOR(f(stream, this, ptr)); }
 bool FFmpeg::conditional_on_streams(stream_f_bool &&f) {
     bool cond = false;
@@ -72,7 +73,7 @@ packet_ptr FFmpeg::make_packet_ptr() {
 }
 
 static int64_t seek(void *opaque, int64_t offset, int whence) {
-    auto *bd = (Buffer *)opaque;
+    auto bd = (Buffer *)opaque;
 
     if (whence == AVSEEK_SIZE) return bd->get_total_size();
 
@@ -163,9 +164,6 @@ int FFmpeg::set_video(const string &filename) {
     streams[VIDEO] = make_unique<Video>(fmt_ctx);
     streams[AUDIO] = make_unique<Audio>(fmt_ctx);
 
-    video()->init_stream(AVMEDIA_TYPE_VIDEO);
-    audio()->init_stream(AVMEDIA_TYPE_AUDIO);
-
     if (video()->is_valid())
         aspect_ratio = Resolution(video()->dec_ctx->width, video()->dec_ctx->height);
     total_duration = chrono::duration<float>(fmt_ctx->duration / AV_TIME_BASE);
@@ -179,10 +177,8 @@ int FFmpeg::set_video(const string &filename) {
 
 double FFmpeg::front_frame_timestamp_in_seconds(stream_ptr &stream) const {
     auto front_frame = stream->frames_queue.front_ptr();
-    if ((*front_frame).get() == nullptr) return -1;
-    auto pts = (*front_frame).get()->pts;
-    if (pts == AV_NOPTS_VALUE) return -1;
-    return ((double)pts) * av_q2d(stream->get_stream()->time_base);
+    if (!*front_frame) return -1;
+    return ((double)(*front_frame)->pts) * av_q2d(stream->get_stream()->time_base);
 }
 
 LoadStatus FFmpeg::get_load_status() const { return load_status.load(memory_order_acquire); }
@@ -193,14 +189,11 @@ bool FFmpeg::is_loaded(const LoadStatus &status) const {
 LoadStatus FFmpeg::skip_frames(stream_ptr &stream) {
     stream->frames_queue.clear();
 
-    LoadStatus state;
-    do { state = load_more_frames(); } while (state != ERROR && stream->frames_queue.empty());
-    return state;
-}
+    LoadStatus status = NEED_MORE_PACKETS;
+    while (status != ERROR && stream->frames_queue.empty()) {
+        while (status == NEED_MORE_PACKETS) status = send_packet();
+    }
 
-LoadStatus FFmpeg::load_more_frames() {
-    LoadStatus status;
-    do { status = send_packet(); } while (status == NEED_MORE_PACKETS);
     return status;
 }
 
@@ -224,6 +217,18 @@ LoadStatus FFmpeg::send_packet() {
     if (packet->stream_index == video()->stream_index) on_load = LOADED_VIDEO, stream = video();
     else if (packet->stream_index == audio()->stream_index)
         on_load = LOADED_AUDIO, stream = audio();
+
+    // printf("--------------------\n");
+    // using finder_args = tuple<int, LoadStatus *, stream_ptr *>;
+    // finder_args args{packet->stream_index, &on_load, &stream};
+    // auto find_matching_stream = [](stream_ptr &stream, FFmpeg *ffmpeg, void *ptr) {
+    //     auto &[stream_index, on_load, stream_to_def] = *static_cast<finder_args *>(ptr);
+    //     if (stream_index == stream->stream_index) {
+    //         printf("found stream\n");
+    //         *on_load = stream->status_on_load, *stream_to_def = stream;
+    //     }
+    // };
+    // execute_on_streams(find_matching_stream, &args);
 
     if (!stream) return load_status;
 

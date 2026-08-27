@@ -1,6 +1,7 @@
 #include "ffmpeg/platform/make_fetcher.hpp"
 #include "ffmpeg/fetcher/file_fetcher.hpp"
 #include "types/types.hpp"
+
 #include <memory>
 
 extern "C" {
@@ -34,7 +35,6 @@ fetcher_ptr make_fetcher_os(const std::string &filename, size_t avio_ctx_buffer_
     init_cyclic_buf(fetcher, avio_ctx_buffer_size);
 #else
     fetcher->bd = std::make_unique<DefaultBuffer>();
-
     fetcher->bd->set_base(buffer);
     fetcher->bd->set_total_size(buffer_size);
 #endif

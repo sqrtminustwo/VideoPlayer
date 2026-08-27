@@ -16,11 +16,8 @@ struct Stream {
     AVStream *get_stream() const;
     bool is_valid() const;
 
-    virtual int after_init_stream();
-    int init_stream(AVMediaType);
-
     Stream() = delete;
-    Stream(format_ptr, LoadStatus);
+    Stream(format_ptr, LoadStatus, AVMediaType);
     virtual ~Stream() = default;
 
     static const int frames_queue_size_bound = 10;

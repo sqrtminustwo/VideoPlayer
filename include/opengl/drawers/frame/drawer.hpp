@@ -5,6 +5,7 @@
 #include "opengl/context/context.hpp"
 #include "opengl/shaders/texture_shader.hpp"
 #include "types/constants.hpp"
+
 #include <functional>
 #include <memory>
 

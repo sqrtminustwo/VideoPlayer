@@ -1,8 +1,8 @@
 #ifndef GUARDED_QUE_H
 #define GUARDED_QUE_H
 
-#include <atomic>
 #include <condition_variable>
+#include <atomic>
 #include <deque>
 #include <mutex>
 

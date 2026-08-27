@@ -3,7 +3,7 @@
 
 #include "types/constants.hpp"
 #include "types/types.hpp"
-#include "ffmpeg/player/stream/stream.hpp" // IWYU pragma: keep
+#include "ffmpeg/stream/stream.hpp" // IWYU pragma: keep
 #include "utils/guards/atomic_boolean_guard.hpp"
 
 #include <thread>

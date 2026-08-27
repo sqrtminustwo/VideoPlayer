@@ -4,7 +4,7 @@
 #include "imgui_internal.h"
 #include "types/constants.hpp"
 #include "utils/utils.hpp"
-#include "ffmpeg/player/player.hpp" // IWYU pragma: keep
+#include "player/player.hpp" // IWYU pragma: keep
 
 Overlay::Controller::Controller(player_ptr player) : player(player){};
 

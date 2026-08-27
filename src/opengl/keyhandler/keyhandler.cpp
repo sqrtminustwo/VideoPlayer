@@ -1,6 +1,6 @@
 #include <thread>
 #include "opengl/context/context.hpp" // IWYU pragma: keep
-#include "ffmpeg/player/player.hpp"   // IWYU pragma: keep
+#include "player/player.hpp"          // IWYU pragma: keep
 #include "opengl/keyhandler/keyhandler.hpp"
 #include "opengl/drawers/overlay/components/animated/animated.hpp"
 

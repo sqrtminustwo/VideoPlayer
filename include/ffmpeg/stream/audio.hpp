@@ -1,7 +1,7 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
-#include "ffmpeg/player/stream/stream.hpp"
+#include "ffmpeg/stream/stream.hpp"
 
 struct Audio : public Stream {
     void add_frame(frame_ptr &&frame) override;

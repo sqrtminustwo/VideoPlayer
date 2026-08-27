@@ -1,4 +1,4 @@
-#include "ffmpeg/player/pause.hpp"
+#include "player/pause.hpp"
 #include "utils/utils.hpp"
 
 #define LOCK_MUTEX                                                                                 \

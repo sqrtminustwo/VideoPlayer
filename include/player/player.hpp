@@ -6,8 +6,8 @@
 #include <thread>
 
 #include "types/frame/last_frame.hpp"
-#include "ffmpeg/player/pause.hpp"
-#include "ffmpeg/player/ffmpeg.hpp"
+#include "player/pause.hpp"
+#include "ffmpeg/ffmpeg.hpp"
 #include "types/types.hpp"
 
 class Player {
@@ -47,11 +47,6 @@ class Player {
     void set_played_duration(const duration &);
     void skip_seconds_forward(bool);
 
-    /** @brief Get next frame of loaded video
-     *  @params bool paused, whether video is paused or no
-     *  @throws if no video loaded
-     *  @return AVframe_ptr* if video ended null_ptr
-     */
     LastFrame &operator()();
 
     ~Player();

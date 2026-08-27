@@ -1,4 +1,4 @@
-#include "ffmpeg/player/stream/video.hpp"
+#include "ffmpeg/stream/video.hpp"
 #include "types/frame/frame_ptr.hpp"
 #include "types/types.hpp"
 #include <libavutil/avutil.h>

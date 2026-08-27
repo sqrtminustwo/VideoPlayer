@@ -1,5 +1,5 @@
 #include "miniaudio/audio_device.hpp"
-#include "ffmpeg/player/player.hpp" // IWYU pragma: keep
+#include "player/player.hpp" // IWYU pragma: keep
 #include "utils/guarded_que.hpp"
 #include <cstdint>
 #include <cstring>

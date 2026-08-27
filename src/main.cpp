@@ -1,6 +1,6 @@
 #include <array>
 
-#include "ffmpeg/player/player.hpp"
+#include "player/player.hpp"
 #include "fonts/fonts.hpp"
 #include "miniaudio/audio_device.hpp"
 #include "opengl/drawers/overlay/components/animated/backward.hpp"

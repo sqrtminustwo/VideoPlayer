@@ -1,5 +1,5 @@
 #include "opengl/drawers/overlay/components/animated/spinner.hpp"
-#include "ffmpeg/player/player.hpp" // IWYU pragma: keep
+#include "player/player.hpp" // IWYU pragma: keep
 #include "imgui.h"
 #include "imgui_internal.h"
 

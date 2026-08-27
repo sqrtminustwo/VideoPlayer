@@ -7,6 +7,7 @@ struct Audio : public Stream {
     void add_frame(frame_ptr &&frame) override;
 
     Audio() = delete;
+    Audio(const Audio &) = delete;
     Audio(format_ptr);
 
   private:

@@ -8,9 +8,6 @@ namespace Overlay {
 struct Drawer {
     Drawer();
     void operator()(components_container &components);
-
-  private:
-    bool should_draw = true;
 };
 
 } // namespace Overlay

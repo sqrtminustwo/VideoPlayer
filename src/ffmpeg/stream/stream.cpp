@@ -50,7 +50,7 @@ void Stream::flush_buffers() { avcodec_flush_buffers(dec_ctx.get()); }
 
 decoder_ptr Stream::make_decoder_ptr(const AVCodec *dec) const {
     // Initial initialization
-    if (dec == NULL) return decoder_ptr(nullptr, [](AVCodecContext *) {});
+    if (dec == nullptr) return decoder_ptr(nullptr, [](AVCodecContext *) {});
 
     return decoder_ptr(avcodec_alloc_context3(dec), [](AVCodecContext *f) {
         avcodec_free_context(&f);

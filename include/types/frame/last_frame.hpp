@@ -8,8 +8,6 @@ struct LastFrame : public frame_ptr {
 
     bool should_send_to_gpu = false;
 
-    void set_to_false();
-
     LastFrame &operator=(frame_ptr &&);
 };
 

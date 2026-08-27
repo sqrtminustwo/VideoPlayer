@@ -23,25 +23,12 @@ using namespace std;
 int main(int argc, char **argv) {
     auto player = make_shared<Player>();
 
-    int ret;
-#ifdef __EMSCRIPTEN__
-    ret = player->set_video();
-#else
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s <video>\n", argv[0]);
-        exit(0);
-    }
-    auto filename = argv[1];
-
-    ret = player->set_video(filename);
-#endif
+    int ret = player->set_video(argc >= 2 ? argv[1] : nullptr);
 
     if (ret < 0) {
         fprintf(stderr, "Error setting video!\n");
         exit(1);
     }
-
-    AudioDevice audio_device{player};
 
     auto myimgui_context = make_shared<Context::MyImGui>();
     auto opengl_context = static_pointer_cast<Context::OpenGL>(myimgui_context);
@@ -64,6 +51,8 @@ int main(int argc, char **argv) {
     KeyHandler keyhandler{player, components};
 
     glfwSetKeyCallback(opengl_context->window, keyhandler.make_key_callback(opengl_context));
+
+    AudioDevice audio_device{player};
 
 #ifdef __EMSCRIPTEN__
     EMSCRIPTEN_MAINLOOP_BEGIN

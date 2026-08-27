@@ -6,12 +6,9 @@ extern "C" {
 }
 
 frame_ptr::frame_ptr(extra_frame_free extra_free) {
-    AVFrame *raw_frame = av_frame_alloc();
-
-    frame = std::shared_ptr<AVFrame>(raw_frame, [extra_free](AVFrame *f) {
+    frame = std::shared_ptr<AVFrame>(av_frame_alloc(), [extra_free](AVFrame *f) {
         if (!f) return;
         extra_free(f);
-
         av_frame_free(&f);
     });
 }

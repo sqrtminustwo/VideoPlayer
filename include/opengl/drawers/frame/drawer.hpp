@@ -5,6 +5,7 @@
 #include "opengl/context/context.hpp"
 #include "opengl/shaders/texture_shader.hpp"
 #include "types/constants.hpp"
+#include "types/types.hpp"
 
 #include <functional>
 #include <memory>
@@ -17,7 +18,7 @@ enum TexType { FULL, SUB };
 
 struct Drawer {
     Drawer(std::shared_ptr<Context::OpenGL>, std::shared_ptr<TextureShader>);
-    void set_image_resolution(Resolution);
+    void set_image_resolution(Resolution &);
 
     /** @brief Draw given frame
      *  @param LastFrame to render.
@@ -31,6 +32,9 @@ struct Drawer {
 
     void send_texture(Resolution &, frame_ptr &, texutre_sender);
     virtual int conditional_on_channel(int &dim, TextureChannel &) = 0;
+
+  private:
+    Resolution res{0, 0};
 };
 
 } // namespace Frame

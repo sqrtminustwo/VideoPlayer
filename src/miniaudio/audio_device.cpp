@@ -26,7 +26,7 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 
     while (filled_size < frameCount) {
         auto frame = queue->front_ptr();
-        if (frame == nullptr) return;
+        if (!frame) return;
 
         int remaining_size = frame_s->nb_samples - frame->offset;
         int framesToCopy = std::min(remaining_size, (int)(frameCount - filled_size));
@@ -59,7 +59,7 @@ AudioDevice::AudioDevice(player_ptr player) {
     deviceConfig.dataCallback = data_callback;
     deviceConfig.pUserData = player.get();
 
-    if (ma_device_init(NULL, &deviceConfig, &device) != MA_SUCCESS) {
+    if (ma_device_init(nullptr, &deviceConfig, &device) != MA_SUCCESS) {
         printf("Failed to open audio playback device.\n");
         return;
     }

@@ -7,6 +7,7 @@ struct Video : public Stream {
     void add_frame(frame_ptr &&frame) override;
 
     Video() = delete;
+    Video(const Video &) = delete;
     Video(format_ptr);
 
     frame_ptr make_black_frame_ptr(Resolution);

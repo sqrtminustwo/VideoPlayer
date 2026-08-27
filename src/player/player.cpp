@@ -45,9 +45,8 @@ int Player::set_video(const string &filename) {
 
     state = VIDEO_SET_NOT_PLAYED;
 
-    last_frame = std::move(
-        std::static_pointer_cast<Video>(ffmpeg.video())->make_black_frame_ptr(ffmpeg.aspect_ratio)
-    );
+    last_frame =
+        move(static_pointer_cast<Video>(ffmpeg.video())->make_black_frame_ptr(ffmpeg.aspect_ratio));
 
     return ret;
 }

@@ -10,8 +10,7 @@ void Overlay::Drawer::operator()(components_container &components) {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    if (should_draw)
-        for (auto &component : components) (*component)();
+    for (auto &component : components) (*component)();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

@@ -1,6 +1,4 @@
 #include "utils/utils.hpp"
-#include "imgui.h"
-#include "types/types.hpp"
 #include <iostream>
 #include <iomanip>
 
@@ -29,12 +27,6 @@ string duration_to_string(duration duration) {
     out << setw(2) << h.count() << ":" << setw(2) << m.count() << ":" << setw(2) << s.count();
 
     return out.str();
-}
-
-pair<float, float> get_window_dim() {
-    float w = ImGui::GetWindowSize().x;
-    float h = ImGui::GetContentRegionAvail().y;
-    return {w, h};
 }
 
 duration duration_diff(const time_point a, const time_point b) {

@@ -17,6 +17,7 @@ struct Stream {
     bool is_valid() const;
 
     Stream() = delete;
+    Stream(const Stream &) = delete;
     Stream(format_ptr, LoadStatus, AVMediaType);
     virtual ~Stream() = default;
 

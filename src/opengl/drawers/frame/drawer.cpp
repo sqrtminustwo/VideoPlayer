@@ -1,4 +1,5 @@
 #include "opengl/context/context.hpp"
+#include "types/types.hpp"
 #include "opengl/drawers/frame/drawer.hpp"
 #include <memory>
 #include <glad.h>
@@ -33,7 +34,8 @@ void Frame::Drawer::send_texture(Resolution &res, frame_ptr &frame, texutre_send
     }
 }
 
-void Frame::Drawer::set_image_resolution(Resolution res) {
+void Frame::Drawer::set_image_resolution(Resolution &res) {
+    this->res = res;
     frame_ptr frame = nullptr;
     send_texture(res, frame, [](Resolution &&res, uint8_t *_, int i) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -60,8 +62,6 @@ void Frame::Drawer::operator()(LastFrame &last_frame) {
 
     // This is not needed since we only use 1 shader
     // shader->use();
-    auto res = Resolution{last_frame->width, last_frame->height};
-
     send_texture(res, last_frame, [](Resolution &&res, uint8_t *data, int i) {
         glTexSubImage2D(
             GL_TEXTURE_2D,

@@ -120,11 +120,11 @@ int FFmpeg::set_video(const string &filename) {
      * needed for these 2 loads, below guard sets
      * load mode to SEQ until destruction
      */
-    SeqGuard guard{dynamic_cast<CyclicFragmentBuffer2 *>(fetcher->bd.get()), FULL};
+    SeqGuard guard{static_cast<CyclicFragmentBuffer2 *>(fetcher->bd.get()), FULL};
 #endif
 
-    AVIOContext *avio_ctx = NULL;
-    uint8_t *avio_ctx_buffer = NULL;
+    AVIOContext *avio_ctx = nullptr;
+    uint8_t *avio_ctx_buffer = nullptr;
 
     avio_ctx_buffer = (uint8_t *)av_malloc(avio_ctx_buffer_size);
     if (!avio_ctx_buffer) {
@@ -151,12 +151,12 @@ int FFmpeg::set_video(const string &filename) {
     // already allocated in member variable
     auto format_ptr = fmt_ctx.get();
 
-    if ((ret = avformat_open_input(&format_ptr, NULL, NULL, NULL)) < 0) {
+    if ((ret = avformat_open_input(&format_ptr, nullptr, nullptr, nullptr)) < 0) {
         printf("Could not open input\n");
         return ret;
     }
 
-    if ((ret = avformat_find_stream_info(format_ptr, NULL)) < 0) {
+    if ((ret = avformat_find_stream_info(format_ptr, nullptr)) < 0) {
         printf("Cannot find stream information\n");
         return ret;
     }
@@ -201,7 +201,7 @@ LoadStatus FFmpeg::skip_frames(stream_ptr &stream) {
 #define RETURN                                                                                     \
     {                                                                                              \
         auto new_load_status = ret == AVERROR_EOF ? END : ERROR;                                   \
-        return (load_status = new_load_status);                                                    \
+        return new_load_status;                                                                    \
     }
 
 LoadStatus FFmpeg::send_packet() {
@@ -235,7 +235,6 @@ LoadStatus FFmpeg::send_packet() {
         RETURN;
     }
 
-    int c = 0;
     while (ret >= 0) {
         /*
          * Allocates new frame each time

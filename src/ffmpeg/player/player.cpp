@@ -57,12 +57,7 @@ LastFrame &Player::operator()() {
     // either black or previous frame
     if (is_stalled()) return last_frame;
 
-    if (aprox_played_duration(ffmpeg.total_duration)) {
-        played_duration = ffmpeg.total_duration;
-        return last_frame;
-    }
-
-    if (ffmpeg.get_load_status() == ERROR) {
+    if (aprox_played_duration(ffmpeg.total_duration) || ffmpeg.get_load_status() == ERROR) {
         played_duration = ffmpeg.total_duration;
         return last_frame;
     }

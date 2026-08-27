@@ -1,7 +1,7 @@
 #ifndef PAUSE_H
 #define PAUSE_H
 
-#include "types/types.hpp"
+#include "types/chrono_types.hpp"
 
 #include <mutex>
 

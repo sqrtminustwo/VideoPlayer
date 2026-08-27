@@ -1,7 +1,15 @@
 #ifndef MAKE_FETCHER_H
 #define MAKE_FETCHER_H
 
-#include "types/types.hpp"
+#include "fetcher/data_fetcher.hpp"
+
+#include <memory>
+
+/*
+ * Not in types.hpp because unique_ptr requires
+ * size, so we need to include real declaration of data_fetcher
+ */
+using fetcher_ptr = std::unique_ptr<DataFetcher>;
 
 void init_cyclic_buf(fetcher_ptr &, size_t);
 

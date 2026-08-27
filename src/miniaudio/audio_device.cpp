@@ -17,19 +17,19 @@ extern "C" {
 constexpr auto f = sizeof(float);
 
 void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount) {
-    auto player = reinterpret_cast<Player *>(pDevice->pUserData);
+    auto player = static_cast<Player *>(pDevice->pUserData);
     if (player->is_stalled()) return;
     auto queue = &player->get_audio_stream()->frames_queue;
 
     uint8_t *pOutputReal = static_cast<uint8_t *>(pOutput);
-    int filled_size = 0;
+    size_t filled_size = 0;
 
     while (filled_size < frameCount) {
         auto frame = queue->front_ptr();
         if (frame == nullptr) return;
 
         int remaining_size = frame_s->nb_samples - frame->offset;
-        int framesToCopy = std::min(remaining_size, (int)frameCount - filled_size);
+        int framesToCopy = std::min(remaining_size, (int)(frameCount - filled_size));
 
         auto channels_size = frame_s->ch_layout.nb_channels * f;
         auto start = frame_s.offset * channels_size;

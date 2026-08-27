@@ -1,7 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "types/types.hpp"
+#include "types/chrono_types.hpp"
 
 #include <string>
 #include <thread>

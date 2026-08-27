@@ -1,11 +1,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include "fetcher/data_fetcher.hpp"
-#include <array>
 #include <functional>
 #include <memory>
-#include <chrono>
 
 // include minimization
 class AVFrame;
@@ -51,10 +48,6 @@ using stream_f_bool = std::function<bool(stream_ptr &)>;
 using components_container = std::array<std::shared_ptr<Overlay::Component>, 5>;
 using animated_ptr = std::shared_ptr<Overlay::Animated>;
 using ach = Overlay::AnimatedComponentsHandle &;
-
-using time_point = std::chrono::system_clock::time_point;
-using duration = std::chrono::duration<float>;
-using fetcher_ptr = std::unique_ptr<DataFetcher>;
 
 struct Resolution {
     int width;

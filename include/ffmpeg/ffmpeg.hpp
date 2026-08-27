@@ -1,10 +1,12 @@
 #ifndef FFMPEG_META_H
 #define FFMPEG_META_H
 
+#include "ffmpeg/platform/make_fetcher.hpp"
 #include "types/constants.hpp"
 #include "types/types.hpp"
 #include "ffmpeg/stream/stream.hpp" // IWYU pragma: keep
 #include "utils/guards/atomic_boolean_guard.hpp"
+#include "types/chrono_types.hpp"
 
 #include <thread>
 

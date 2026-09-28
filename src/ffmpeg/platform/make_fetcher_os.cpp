@@ -1,6 +1,6 @@
+#if !defined(__EMSCRIPTEN__)
 #include "ffmpeg/platform/make_fetcher.hpp"
 #include "ffmpeg/fetcher/file_fetcher.hpp"
-#include "types/types.hpp"
 
 #include <memory>
 
@@ -8,7 +8,7 @@ extern "C" {
 #include <libavutil/file.h>
 }
 
-#if !defined(DEBUG) && !defined(__EMSCRIPTEN__)
+#if !defined(DEBUG)
 #include "buffer/default_buffer.hpp"
 #endif
 
@@ -31,7 +31,7 @@ fetcher_ptr make_fetcher_os(const std::string &filename, size_t avio_ctx_buffer_
 #endif
     fetcher_ptr fetcher = std::move(fetcher_l);
 
-#ifdef DEBUG
+#if defined(DEBUG)
     init_cyclic_buf(fetcher, avio_ctx_buffer_size);
 #else
     fetcher->bd = std::make_unique<DefaultBuffer>();
@@ -41,3 +41,5 @@ fetcher_ptr make_fetcher_os(const std::string &filename, size_t avio_ctx_buffer_
 
     return fetcher;
 }
+
+#endif

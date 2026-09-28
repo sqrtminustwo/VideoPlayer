@@ -86,7 +86,6 @@ void Overlay::Controller::operator()() {
     ImGui::SameLine();
     const ImU32 fg_col = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
     const ImU32 bg_col = ImGui::GetColorU32(ImGuiCol_Button);
-    const float value = player->played_duration.count() / player->get_total_duration().count();
     ImVec2 size = ImVec2(maxWidth, 6);
     size.x -= ImGui::GetStyle().FramePadding.x * 2;
 
@@ -102,7 +101,9 @@ void Overlay::Controller::operator()() {
     }
 
     ImGui::GetWindowDrawList()->AddRectFilled(bb.Min, bb.Max, bg_col);
-    auto value_pos = ImVec2(pos.x + size.x * value, bb.Max.y);
+    const float played_duration_ratio =
+        player->played_duration.count() / player->get_total_duration().count();
+    auto value_pos = ImVec2(pos.x + size.x * played_duration_ratio, bb.Max.y);
     ImGui::GetWindowDrawList()->AddRectFilled(bb.Min, value_pos, fg_col);
     ImGui::GetWindowDrawList()->AddCircleFilled(
         ImVec2(value_pos.x, bb.Min.y + (bb.Max.y - bb.Min.y) / 2),

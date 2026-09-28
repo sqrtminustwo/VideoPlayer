@@ -3,7 +3,7 @@ project(WebScreenShare LANGUAGES C CXX)
 add_definitions(-w)
 
 if(EMSCRIPTEN)
-    add_compile_options("-pthread")
+    add_compile_options("-pthread" "-msimd128")
     add_link_options("-pthread")
 endif()
 
@@ -40,13 +40,7 @@ if(EMSCRIPTEN)
     target_link_options(${PROJECT_NAME} PRIVATE
     # https://emscripten.org/docs/porting/asyncify.html
         "-sASYNCIFY"
-        "-pthread"
         "-sPTHREAD_POOL_SIZE=4"
-        # Not a solution, window is not defined in background thread
-        # "-sPROXY_TO_PTHREAD=1"
-        # "-sOFFSCREENCANVAS_SUPPORT=1"
-        # "-sOFFSCREENCANVASES_TO_PTHREAD='#canvas'"
-        # "-sOFFSCREEN_FRAMEBUFFER=1"
         "-sUSE_GLFW=3"
         "-sUSE_WEBGL2=1"
         # "-sALLOW_MEMORY_GROWTH"

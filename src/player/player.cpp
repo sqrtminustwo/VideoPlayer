@@ -119,6 +119,12 @@ void Player::set_played_duration(const duration &new_played_duration) {
     this->start_time = started_setting - cast_to_start_time(new_played_duration);
 
     join_if_joinable(duration_setting_thread);
+
+    {
+        LOCK_PLAYED_DURATION;
+        played_duration = new_played_duration;
+    }
+
     state = LOADING;
 
     duration_setting_thread = thread([this, new_played_duration, started_setting]() {
@@ -156,13 +162,6 @@ void Player::set_played_duration(const duration &new_played_duration) {
             if (seeked > -tol && seeked < tol) break;
 
             seeked = max(0., seeked - decriment);
-        }
-
-        duration old_played_duration;
-        {
-            LOCK_PLAYED_DURATION;
-            old_played_duration = played_duration;
-            played_duration = new_played_duration;
         }
 
         auto seek_to_exact = [](stream_ptr &stream, FFmpeg *ffmpeg, void *ptr) {

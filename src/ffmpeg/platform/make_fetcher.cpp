@@ -11,8 +11,8 @@ extern "C" {
 void init_cyclic_buf(fetcher_ptr &fetcher, size_t avio_ctx_buffer_size) {
     fetcher->bd = std::make_unique<CyclicFragmentBuffer2>(
         fetcher.get(),
-        avio_ctx_buffer_size * 4,
-        avio_ctx_buffer_size * 3,
+        avio_ctx_buffer_size * 2,
+        avio_ctx_buffer_size,
         avio_ctx_buffer_size,
         FULL
     );
